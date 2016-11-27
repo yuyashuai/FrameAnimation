@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int totalCount;
     private Handler decodeHandler;
     private Thread decodeThread;
-
     private Button btn_am1;
     private Button btn_am2;
     private Button btn_am3;
@@ -131,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             {
                 return;
             }
-            System.out.println("准备绘制："+assets[position]);
             currentBitmap=bitmapCache.get(assets[position]);
             decodeHandler.sendEmptyMessage(position);
             canvas=surfaceHolder.lockCanvas(rect);
@@ -164,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         {
                             long now = System.currentTimeMillis();
                             drawBitmap();
+                            //100ms draw one frame , you can change this time
                             sleep(100 - (System.currentTimeMillis() - now)>0?100 - (System.currentTimeMillis() - now):0);
                         } catch (InterruptedException e1)
                         {
