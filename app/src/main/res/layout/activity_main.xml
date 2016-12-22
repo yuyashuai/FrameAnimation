@@ -6,44 +6,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.yuyashuai.surfaceviewanimation.MainActivity">
-    <ImageView
-        android:background="@mipmap/bg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+
     <SurfaceView
         android:id="@+id/sv_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
     />
-    <LinearLayout
+    <Button
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:weightSum="4"
-        android:layout_width="match_parent"
-        android:layout_height="40dp">
-        <Button
-            android:text="Anim1"
-            android:layout_weight="1"
-            android:id="@+id/btn_am1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:layout_weight="1"
-            android:text="Anim2"
-            android:id="@+id/btn_am2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:text="Anim3"
-            android:layout_weight="1"
-            android:id="@+id/btn_am3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:text="ALL"
-            android:id="@+id/btn_am4"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+        android:layout_centerHorizontal="true"
+        android:text="start"
+        android:id="@+id/bt_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </RelativeLayout>
