@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         }
         final List<String> mPathList= new ArrayList<>();
 
-        final SurfaceViewAnimation mSva=
+        final SurfaceViewAnimation surfaceViewAnimation=
                 new SurfaceViewAnimation.Builder(mSurfaceView,file)
                 .setRepeatMode(SurfaceViewAnimation.MODE_ONCE)
                 .setFrameInterval(80)
@@ -41,13 +41,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //you should put your frame animation in ExternalStorageDirectory/zzzz/
-                mSva.start();
+                surfaceViewAnimation.start();
             }
         });
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSva.stop();
+                surfaceViewAnimation.stop();
             }
         });
 
