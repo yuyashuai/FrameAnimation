@@ -20,29 +20,34 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SurfaceView mSurfaceView=  (SurfaceView) findViewById(R.id.sv_main);
-        final SurfaceViewAnimation mSva=new SurfaceViewAnimation();
-        Button button= (Button) findViewById(R.id.bt_start);
+        Button btnStart= (Button) findViewById(R.id.btn_start);
+        Button btnStop= (Button) findViewById(R.id.btn_stop);
         final File file =new File(Environment.getExternalStorageDirectory()+"/zzzz");
-        mSva.setSurfaceView(mSurfaceView,getApplicationContext());
+       // mSva.setSurfaceView(mSurfaceView,getApplicationContext());
         if(!file.exists())
         {
             throw new UnsupportedOperationException("you should put your frame animation in ExternalStorageDirectory/zzzz/");
         }
+        final List<String> mPathList= new ArrayList<>();
 
-        button.setOnClickListener(new View.OnClickListener() {
+        final SurfaceViewAnimation mSva=
+                new SurfaceViewAnimation.Builder(mSurfaceView,file)
+                .setRepeatMode(SurfaceViewAnimation.MODE_ONCE)
+                .setFrameInterval(80)
+                .setCacheCount(8)
+                .build();
+
+        btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //you should put your frame animation in ExternalStorageDirectory/zzzz/
-                final List<String> mPathList= new ArrayList<>();
-                if(file.isDirectory())
-                {
-                    File[] files=file.listFiles();
-                    for(File mFrameFile:files )
-                    {
-                        mPathList.add(mFrameFile.getAbsolutePath());
-                    }
-                }
-                mSva.startAnimation(mPathList);
+                mSva.start();
+            }
+        });
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSva.stop();
             }
         });
 

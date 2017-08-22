@@ -13,10 +13,18 @@
         android:layout_height="match_parent"
     />
     <Button
+        android:layout_marginLeft="20dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
         android:text="start"
-        android:id="@+id/bt_start"
+        android:id="@+id/btn_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:layout_marginRight="20dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:text="stop"
+        android:id="@+id/btn_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 </RelativeLayout>
