@@ -1,9 +1,9 @@
 # SurfaceViewFrameAnimation
 Use SurfaceView instead of Android AnimationDrawable to achieve Frame Animation that contains lots of pictures.
-This way you can effectively avoid the Out Of Memory and Application is not responding while you decode many pictures from local.   
+effectively avoid OOM and ANR while decode many pictures.
 用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。
-## 使用
-
+## 使用 
+#### 从文件目录中读取资源
 ```
 SurfaceViewAnimation surfaceViewAnimation=
                 new SurfaceViewAnimation.Builder(mSurfaceView,file)
@@ -12,3 +12,13 @@ SurfaceViewAnimation surfaceViewAnimation=
                 .build();
 surfaceViewAnimation.start();
 ```
+#### 从assets目录中读取资源
+如果传入的是assets下的一级目录，那么只需要传入文件夹名称，如果是二级目录，那么需要传入这个目录的完整路径
+```
+SurfaceViewAnimation surfaceViewAnimation=
+                new SurfaceViewAnimation.Builder(mSurfaceView,"crow")
+                .setRepeatMode(SurfaceViewAnimation.MODE_INFINITE)
+                .build();
+```
+#### 帧动画命名
+如果以数字名称，必须严格按照顺序，且长度一致。
