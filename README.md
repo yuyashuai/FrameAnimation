@@ -21,4 +21,4 @@ SurfaceViewAnimation surfaceViewAnimation=
                 .build();
 ```
 #### 帧动画命名
-如果以数字名称，必须严格按照顺序，且长度一致。
+推荐以数字名称，并且必须严格按照顺序，且长度保持一致。
