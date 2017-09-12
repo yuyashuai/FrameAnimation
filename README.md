@@ -9,7 +9,6 @@ SurfaceViewAnimation surfaceViewAnimation=
                 new SurfaceViewAnimation.Builder(mSurfaceView,file)
                 .setRepeatMode(SurfaceViewAnimation.MODE_ONCE)
                 .setFrameInterval(80)
-                .setCacheCount(8)
                 .build();
 surfaceViewAnimation.start();
 ```
