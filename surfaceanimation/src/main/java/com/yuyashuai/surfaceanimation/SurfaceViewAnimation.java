@@ -1,5 +1,6 @@
-package com.yuyashuai.surfaceviewanimation;
+package com.yuyashuai.surfaceanimation;
 
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -19,9 +20,11 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -38,7 +41,12 @@ public final class SurfaceViewAnimation {
     private List<String> mPathList;
     private MyCallBack mCallBack;
     private int mode = MODE_INFINITE;
-    private final String TAG="SurfaceViewAnimation";
+    /**
+     * 是否从asset中读取资源
+     */
+    private boolean isAssetResource = false;
+    private AssetManager mAssetManager;
+    private final String TAG = "SurfaceViewAnimation";
     /**
      * total frames.
      */
@@ -83,7 +91,7 @@ public final class SurfaceViewAnimation {
     public static final int MODE_INFINITE = 2;
 
     private SurfaceViewAnimation() {
-        mBitmapCache=new SparseArray<>();
+        mBitmapCache = new SparseArray<>();
     }
 
     @IntDef({MODE_INFINITE, MODE_ONCE})
@@ -93,45 +101,65 @@ public final class SurfaceViewAnimation {
 
     public static class Builder {
 
-        private final String TAG="SurfaceViewAnimation";
+        private final String TAG = "SurfaceViewAnimation";
 
         private SurfaceViewAnimation mAnimation;
 
-        public Builder( @NonNull SurfaceView surfaceView,@NonNull List<String> pathList) {
-            mAnimation=new SurfaceViewAnimation();
-            mAnimation.init(surfaceView,pathList);
+        public Builder(@NonNull SurfaceView surfaceView, @NonNull List<String> pathList) {
+            mAnimation = new SurfaceViewAnimation();
+            mAnimation.init(surfaceView, pathList);
         }
 
         /**
-         *
          * @param surfaceView
-         * @param file must be a directory
+         * @param assetPath   asset resource path, must be a directory
          */
-        public Builder(@NonNull SurfaceView surfaceView,@NonNull File file)
-        {
-            List<String> list=new ArrayList<>();
-            if(file!=null)
-            {
-                if(file.exists()&&file.isDirectory())
+        public Builder(@NonNull SurfaceView surfaceView, @NonNull String assetPath) {
+            AssetManager assetManager = surfaceView.getContext().getAssets();
+            try {
+                String assetFiles[] = assetManager.list(assetPath);
+                if (assetFiles.length == 0) {
+                    Log.e(TAG, "no file in this asset directory");
+                    return;
+                }
+                //转换真实路径
+                for(int i=0;i<assetFiles.length;i++)
                 {
-                    File[] files=file.listFiles();
-                    for(File mFrameFile:files )
-                    {
+                    assetFiles[i]=assetPath+File.separator+assetFiles[i];
+                }
+                List<String> mAssertList = Arrays.asList(assetFiles);
+                mAnimation = new SurfaceViewAnimation();
+                mAnimation.isAssetResource = true;
+                mAnimation.setAssetManager(assetManager);
+                mAnimation.init(surfaceView, mAssertList);
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * @param surfaceView
+         * @param file        must be a directory
+         */
+        public Builder(@NonNull SurfaceView surfaceView, @NonNull File file) {
+            List<String> list = new ArrayList<>();
+            if (file != null) {
+                if (file.exists() && file.isDirectory()) {
+                    File[] files = file.listFiles();
+                    for (File mFrameFile : files) {
                         list.add(mFrameFile.getAbsolutePath());
                     }
-                }else if(!file.exists())
-                {
-                    Log.e(TAG,"file doesn't exists, there is no frame to display");
-                }else
-                {
-                    Log.e(TAG,"file isn't a directory, there is no frame to display");
+                } else if (!file.exists()) {
+                    Log.e(TAG, "file doesn't exists");
+                } else {
+                    Log.e(TAG, "file isn't a directory");
                 }
-            }else
-            {
-                Log.e(TAG,"file is null, there is no frame to display");
+            } else {
+                Log.e(TAG, "file is null");
             }
-            mAnimation=new SurfaceViewAnimation();
-            mAnimation.init(surfaceView,list);
+            mAnimation = new SurfaceViewAnimation();
+            mAnimation.init(surfaceView, list);
         }
 
 
@@ -155,21 +183,20 @@ public final class SurfaceViewAnimation {
             return this;
         }
 
-        public SurfaceViewAnimation build()
-        {
+        public SurfaceViewAnimation build() {
             return mAnimation;
         }
 
     }
 
-    private void init(SurfaceView surfaceView ,List<String> pathList) {
+    private void init(SurfaceView surfaceView, List<String> pathList) {
         this.mSurfaceView = surfaceView;
         this.mSurfaceHolder = surfaceView.getHolder();
         mCallBack = new MyCallBack();
         mSurfaceHolder.setFormat(PixelFormat.TRANSLUCENT);
         mSurfaceView.setZOrderOnTop(true);
         mSurfaceHolder.addCallback(mCallBack);
-        this.mPathList=pathList;
+        this.mPathList = pathList;
     }
 
 
@@ -181,16 +208,23 @@ public final class SurfaceViewAnimation {
         if (mPathList == null) {
             throw new NullPointerException("pathList can not be null.");
         }
-        if(mPathList.size()==0)
-        {
+        if (mPathList.size() == 0) {
             return;
         }
-        File file = new File(mPathList.get(0));
-        if (!file.exists()) {
-            return;
+        //从文件中读取
+        if(!isAssetResource)
+        {
+            File file = new File(mPathList.get(0));
+            if (!file.exists()) {
+                return;
+            }
         }
         mTotalCount = mPathList.size();
         startDecodeThread();
+    }
+
+    private void setAssetManager(AssetManager assetManager) {
+        this.mAssetManager = assetManager;
     }
 
     private void setFrameInterval(int time) {
@@ -198,6 +232,7 @@ public final class SurfaceViewAnimation {
     }
 
     public void stop() {
+        if(!isDrawing()) return;
         mCallBack.stopAnim();
     }
 
@@ -205,9 +240,8 @@ public final class SurfaceViewAnimation {
         mCacheCount = count;
     }
 
-    private void setRepeatMode(@RepeatMode int mode)
-    {
-        this.mode=mode;
+    private void setRepeatMode(@RepeatMode int mode) {
+        this.mode = mode;
     }
 
     public boolean isDrawing() {
@@ -247,8 +281,12 @@ public final class SurfaceViewAnimation {
 
         }
 
+        /**
+         * 绘制
+         */
         private void drawBitmap() {
 
+            //当循环播放时，获取真实的position
             if (mode == MODE_INFINITE && position >= mTotalCount) {
                 position = position % mTotalCount;
             }
@@ -260,7 +298,7 @@ public final class SurfaceViewAnimation {
                 clearSurface();
                 return;
             }
-            if (mBitmapCache.get(position,null)==null) {
+            if (mBitmapCache.get(position, null) == null) {
                 mCanvas = mSurfaceHolder.lockCanvas();
                 if (mCanvas == null) {
                     return;
@@ -282,8 +320,7 @@ public final class SurfaceViewAnimation {
             position++;
         }
 
-        private void clearSurface()
-        {
+        private void clearSurface() {
             mCanvas = mSurfaceHolder.lockCanvas();
             //clear surfaceView
             mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
@@ -297,6 +334,7 @@ public final class SurfaceViewAnimation {
             isDrawing = true;
             position = 0;
 
+            //绘制线程
             drawThread = new Thread() {
                 @Override
                 public void run() {
@@ -305,6 +343,7 @@ public final class SurfaceViewAnimation {
                         try {
                             long now = System.currentTimeMillis();
                             drawBitmap();
+                            //控制两帧之间的间隔
                             sleep(mFrameInterval - (System.currentTimeMillis() - now) > 0 ? mFrameInterval - (System.currentTimeMillis() - now) : 0);
                         } catch (InterruptedException e1) {
                             e1.printStackTrace();
@@ -321,7 +360,14 @@ public final class SurfaceViewAnimation {
             mBitmapCache.clear();
             clearSurface();
             //mPathList.clear();
-            drawThread.interrupt();
+            if(mDecodeHandler!=null)
+            {
+                mDecodeHandler.sendEmptyMessage(CMD_STOP_ANIMATION);
+            }
+            if(drawThread!=null)
+            {
+                drawThread.interrupt();
+            }
             if (mAnimationStateListener != null) {
                 mAnimationStateListener.onFinish();
             }
@@ -329,6 +375,7 @@ public final class SurfaceViewAnimation {
         }
     }
 
+    //decode线程
     private void startDecodeThread() {
         new Thread() {
             @Override
@@ -354,11 +401,16 @@ public final class SurfaceViewAnimation {
         }.start();
     }
 
+    /**
+     * 根据不同指令 进行不同操作
+     *
+     * @param position
+     */
     private void decodeBitmap(int position) {
         if (position == CMD_START_ANIMATION) {
             for (int i = 0; i < mCacheCount; i++) {
-                if(mPathList.size()<=i) break;
-                mBitmapCache.put(i, BitmapFactory.decodeFile(mPathList.get(i)));
+                if (mPathList.size() <= i) break;
+                mBitmapCache.put(i, decodeBitmapReal(mPathList.get(i)));
             }
             mCallBack.startAnim();
         } else if (position == CMD_STOP_ANIMATION) {
@@ -366,19 +418,40 @@ public final class SurfaceViewAnimation {
         } else if (mode == MODE_ONCE) {
             if (position + mCacheCount <= mTotalCount - 1) {
                 mBitmapCache.remove(position);
-                mBitmapCache.put(position + mCacheCount, BitmapFactory.decodeFile(mPathList.get(position + mCacheCount)));
+                mBitmapCache.put(position + mCacheCount, decodeBitmapReal(mPathList.get(position + mCacheCount)));
             }
-        } else if (mode == MODE_INFINITE)
-        {
-            if(position+mCacheCount>mTotalCount-1)
-            {
+        } else if (mode == MODE_INFINITE) {
+            if (position + mCacheCount > mTotalCount - 1) {
                 mBitmapCache.remove(position);
-                mBitmapCache.put((position+mCacheCount)%mTotalCount,BitmapFactory.decodeFile(mPathList.get((position+mCacheCount)%mTotalCount)));
-            }else
-            {
+                mBitmapCache.put((position + mCacheCount) % mTotalCount, decodeBitmapReal(mPathList.get((position + mCacheCount) % mTotalCount)));
+            } else {
                 mBitmapCache.remove(position);
-                mBitmapCache.put(position + mCacheCount, BitmapFactory.decodeFile(mPathList.get(position + mCacheCount)));
+                mBitmapCache.put(position + mCacheCount, decodeBitmapReal(mPathList.get(position + mCacheCount)));
             }
         }
+    }
+
+    /**
+     * 根据不同的情况，选择不同的加载方式
+     * @param path
+     * @return
+     */
+    private Bitmap decodeBitmapReal(String path)
+    {
+        if(isAssetResource)
+        {
+            try {
+                return BitmapFactory.decodeStream(mAssetManager.open(path));
+            } catch (IOException e) {
+                stop();
+                Log.e(TAG,"IOException, animation stop");
+                Log.e(TAG,e.getMessage());
+                e.printStackTrace();
+            }
+        }else
+        {
+            return BitmapFactory.decodeFile(path);
+        }
+        return null;
     }
 }
