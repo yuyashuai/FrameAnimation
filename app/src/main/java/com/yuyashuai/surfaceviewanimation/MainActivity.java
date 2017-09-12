@@ -1,17 +1,12 @@
 package com.yuyashuai.surfaceviewanimation;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 
 import com.yuyashuai.surfaceanimation.SurfaceViewAnimation;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -24,14 +19,6 @@ public class MainActivity extends AppCompatActivity {
         SurfaceView mSurfaceView=  (SurfaceView) findViewById(R.id.sv_main);
         Button btnStart= (Button) findViewById(R.id.btn_start);
         Button btnStop= (Button) findViewById(R.id.btn_stop);
-        final File file =new File(Environment.getExternalStorageDirectory()+"/animations");
-       // mSva.setSurfaceView(mSurfaceView,getApplicationContext());
-        if(!file.exists())
-        {
-            throw new UnsupportedOperationException("you should put your frame animation in ExternalStorageDirectory/animations/");
-        }
-        final List<String> mPathList= new ArrayList<>();
-
         final SurfaceViewAnimation surfaceViewAnimation=
                 new SurfaceViewAnimation.Builder(mSurfaceView,"crow")
                 .setRepeatMode(SurfaceViewAnimation.MODE_INFINITE)
