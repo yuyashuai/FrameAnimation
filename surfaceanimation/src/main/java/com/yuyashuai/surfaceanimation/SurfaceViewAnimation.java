@@ -5,9 +5,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -34,10 +35,15 @@ import java.util.List;
 
 public final class SurfaceViewAnimation {
 
-
+    /**
+     * 缓存的图片
+     */
     private final SparseArray<Bitmap> mBitmapCache;
     private SurfaceView mSurfaceView;
     private SurfaceHolder mSurfaceHolder;
+    /**
+     * 存储图片的所有路径
+     */
     private List<String> mPathList;
     private MyCallBack mCallBack;
     private int mode = MODE_INFINITE;
@@ -47,6 +53,8 @@ public final class SurfaceViewAnimation {
     private boolean isAssetResource = false;
     private AssetManager mAssetManager;
     private final String TAG = "SurfaceViewAnimation";
+    private Matrix mDrawMatrix;
+    private int mScaleType;
     /**
      * total frames.
      */
@@ -97,6 +105,57 @@ public final class SurfaceViewAnimation {
     @IntDef({MODE_INFINITE, MODE_ONCE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface RepeatMode {
+    }
+
+    /**
+     * 给定的matrix
+     */
+    private final int SCALE_TYPE_MATRIX = 0;
+    /**
+     * 完全拉伸，不保持原始图片比例，铺满
+     */
+    public static final int SCALE_TYPE_FIT_XY = 1;
+
+    /**
+     * 保持原始图片比例，整体拉伸图片至少填充满X或者Y轴的一个
+     * 并最终依附在视图的上方或者左方
+     */
+    public static final int SCALE_TYPE_FIT_START = 2;
+
+    /**
+     * 保持原始图片比例，整体拉伸图片至少填充满X或者Y轴的一个
+     * 并最终依附在视图的中心
+     */
+    public static final int SCALE_TYPE_FIT_CENTER = 3;
+
+    /**
+     * 保持原始图片比例，整体拉伸图片至少填充满X或者Y轴的一个
+     * 并最终依附在视图的下方或者右方
+     */
+    public static final int SCALE_TYPE_FIT_END = 4;
+
+    /**
+     * 将图片置于视图中央，不缩放
+     */
+    public static final int SCALE_TYPE_CENTER = 5;
+
+    /**
+     * 整体缩放图片，保持原始比例，将图片置于视图中央，
+     * 确保填充满整个视图，超出部分将会被裁剪
+     */
+    public static final int SCALE_TYPE_CENTER_CROP = 6;
+
+    /**
+     * 整体缩放图片，保持原始比例，将图片置于视图中央，
+     * 确保X或者Y至少有一个填充满屏幕
+     */
+    public static final int SCALE_TYPE_CENTER_INSIDE = 7;
+
+    @IntDef({SCALE_TYPE_FIT_XY, SCALE_TYPE_FIT_START, SCALE_TYPE_FIT_CENTER, SCALE_TYPE_FIT_END,
+            SCALE_TYPE_CENTER, SCALE_TYPE_CENTER_CROP, SCALE_TYPE_CENTER_INSIDE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ScaleType {
+
     }
 
     public static class Builder {
@@ -161,8 +220,7 @@ public final class SurfaceViewAnimation {
             mAnimation.init(surfaceView, list);
         }
 
-
-        public Builder setFrameInterval(int timeMillisecond) {
+        public Builder setFrameInterval(@IntRange(from = 1) int timeMillisecond) {
             mAnimation.setFrameInterval(timeMillisecond);
             return this;
         }
@@ -172,13 +230,23 @@ public final class SurfaceViewAnimation {
             return this;
         }
 
-        public Builder setAnimationListener(AnimationStateListener listener) {
+        public Builder setMatrix(@NonNull Matrix matrix) {
+            mAnimation.setMatrix(matrix);
+            return this;
+        }
+
+        public Builder setAnimationListener(@NonNull AnimationStateListener listener) {
             mAnimation.setAnimationStateListener(listener);
             return this;
         }
 
         public Builder setRepeatMode(@RepeatMode int mode) {
             mAnimation.setRepeatMode(mode);
+            return this;
+        }
+
+        public Builder setScaleType(@ScaleType int type) {
+            mAnimation.setScaleType(type);
             return this;
         }
 
@@ -191,6 +259,8 @@ public final class SurfaceViewAnimation {
     private void init(SurfaceView surfaceView, List<String> pathList) {
         this.mSurfaceView = surfaceView;
         this.mSurfaceHolder = surfaceView.getHolder();
+        mDrawMatrix = new Matrix();
+        mScaleType = SCALE_TYPE_FIT_CENTER;
         mCallBack = new MyCallBack();
         mSurfaceHolder.setFormat(PixelFormat.TRANSLUCENT);
         mSurfaceView.setZOrderOnTop(true);
@@ -226,7 +296,23 @@ public final class SurfaceViewAnimation {
     }
 
     private void setFrameInterval(int time) {
+        if (time < 1) {
+            throw new IllegalArgumentException("illegal interval");
+        }
         this.mFrameInterval = time;
+    }
+
+    /**
+     * 给定绘制bitmap的matrix不能和设置ScaleType同时起作用
+     *
+     * @param matrix
+     */
+    public void setMatrix(@NonNull Matrix matrix) {
+        if (matrix == null) {
+            throw new NullPointerException("matrix can not be null");
+        }
+        mDrawMatrix = matrix;
+        mScaleType = SCALE_TYPE_MATRIX;
     }
 
     public void stop() {
@@ -235,6 +321,94 @@ public final class SurfaceViewAnimation {
         }
         mCallBack.stopAnim();
     }
+
+    private void setScaleType(int type) {
+        if (type < SCALE_TYPE_FIT_XY || type > SCALE_TYPE_CENTER_INSIDE) {
+            throw new IllegalArgumentException("Illegal ScaleType");
+        }
+        if (mScaleType != type) {
+            mScaleType = type;
+        }
+    }
+
+    private int mLastFrameWidth = -1;
+    private int mLastFrameHeight = -1;
+    private int mLastFrameScaleType = -1;
+    private int mLastSurfaceWidth;
+    private int mLastSurfaceHeight;
+
+    /**
+     * 根据ScaleType配置绘制bitmap的Matrix
+     *
+     * @param bitmap
+     */
+    private void configureDrawMatrix(Bitmap bitmap) {
+        final int srcWidth = bitmap.getWidth();
+        final int dstWidth = mSurfaceView.getWidth();
+        final int srcHeight = bitmap.getHeight();
+        final int dstHeight = mSurfaceView.getHeight();
+        final boolean nothingChanged =
+                srcWidth == mLastFrameWidth
+                        && srcHeight == mLastFrameHeight
+                        && mLastFrameScaleType == mScaleType
+                        && mLastSurfaceWidth == dstWidth
+                        && mLastSurfaceHeight == dstHeight;
+        if (nothingChanged) {
+            return;
+        }
+        mLastFrameScaleType = mScaleType;
+        mLastFrameHeight = bitmap.getHeight();
+        mLastFrameWidth = bitmap.getWidth();
+        mLastSurfaceHeight = mSurfaceView.getHeight();
+        mLastSurfaceWidth = mSurfaceView.getWidth();
+        if (mScaleType == SCALE_TYPE_MATRIX) {
+            return;
+        } else if (mScaleType == SCALE_TYPE_CENTER) {
+            mDrawMatrix.setTranslate(
+                    Math.round((dstWidth - srcWidth) * 0.5f),
+                    Math.round((dstHeight - srcHeight) * 0.5f));
+        } else if (mScaleType == SCALE_TYPE_CENTER_CROP) {
+            float scale;
+            float dx = 0, dy = 0;
+            //按照高缩放
+            if (dstHeight * srcWidth > dstWidth * srcHeight) {
+                scale = (float) dstHeight / (float) srcHeight;
+                dx = (dstWidth - srcWidth * scale) * 0.5f;
+            } else {
+                scale = (float) dstWidth / (float) srcWidth;
+                dy = (dstHeight - srcHeight * scale) * 0.5f;
+            }
+            mDrawMatrix.setScale(scale, scale);
+            mDrawMatrix.postTranslate(dx, dy);
+        } else if (mScaleType == SCALE_TYPE_CENTER_INSIDE) {
+            float scale;
+            float dx;
+            float dy;
+            //小于dst时不缩放
+            if (srcWidth <= dstWidth && srcHeight <= dstHeight) {
+                scale = 1.0f;
+            } else {
+                scale = Math.min((float) dstWidth / (float) srcWidth,
+                        (float) dstHeight / (float) srcHeight);
+            }
+            dx = Math.round((dstWidth - srcWidth * scale) * 0.5f);
+            dy = Math.round((dstHeight - srcHeight * scale) * 0.5f);
+
+            mDrawMatrix.setScale(scale, scale);
+            mDrawMatrix.postTranslate(dx, dy);
+        } else {
+            RectF srcRect = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            RectF dstRect = new RectF(0, 0, mSurfaceView.getWidth(), mSurfaceView.getHeight());
+            mDrawMatrix.setRectToRect(srcRect, dstRect, MATRIX_SCALE_ARRAY[mScaleType - 1]);
+        }
+    }
+
+    private static final Matrix.ScaleToFit[] MATRIX_SCALE_ARRAY = {
+            Matrix.ScaleToFit.FILL,
+            Matrix.ScaleToFit.START,
+            Matrix.ScaleToFit.CENTER,
+            Matrix.ScaleToFit.END
+    };
 
     private void setCacheCount(int count) {
         mCacheCount = count;
@@ -268,9 +442,8 @@ public final class SurfaceViewAnimation {
         private Canvas mCanvas;
         private Bitmap mCurrentBitmap;
         private int position = 0;
-        public boolean isDrawing = false;
+        private boolean isDrawing = false;
         private Thread drawThread;
-        private Rect rect = new Rect();
 
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
@@ -278,7 +451,7 @@ public final class SurfaceViewAnimation {
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            rect.set(0, 0, width, height);
+
         }
 
         @Override
@@ -310,7 +483,6 @@ public final class SurfaceViewAnimation {
                 if (mCanvas == null) {
                     return;
                 }
-                //clear surfaceView
                 clearSurface();
                 return;
             }
@@ -321,9 +493,8 @@ public final class SurfaceViewAnimation {
                 return;
             }
             mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            //rect.set(0,0,1000,1500);
-            //Log.w("yys",rect.toShortString());
-            mCanvas.drawBitmap(mCurrentBitmap, null, rect, null);
+            configureDrawMatrix(mCurrentBitmap);
+            mCanvas.drawBitmap(mCurrentBitmap, mDrawMatrix, null);
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
             mCurrentBitmap.recycle();
             position++;
@@ -335,7 +506,6 @@ public final class SurfaceViewAnimation {
                 if (mCanvas != null) {
                     mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 }
-                //mSurfaceHolder.unlockCanvasAndPost(mCanvas);
             } catch (Exception e) {
                 e.printStackTrace();
                 //强行停止
@@ -400,7 +570,9 @@ public final class SurfaceViewAnimation {
         }
     }
 
-    //decode线程
+    /**
+     * decode线程
+     */
     private void startDecodeThread() {
         new Thread() {
             @Override
@@ -427,9 +599,10 @@ public final class SurfaceViewAnimation {
     }
 
     /**
-     * 根据不同指令 进行不同操作
+     * 根据不同指令 进行不同操作，
+     * 根据position的位置来缓存position后指定数量的图片
      *
-     * @param position
+     * @param position 小于0时，为handler发出的命令. 大于0时为当前帧
      */
     private void decodeBitmap(int position) {
         if (position == CMD_START_ANIMATION) {
@@ -468,8 +641,6 @@ public final class SurfaceViewAnimation {
                 return BitmapFactory.decodeStream(mAssetManager.open(path));
             } catch (IOException e) {
                 stop();
-                Log.e(TAG, "IOException, animation stop");
-                Log.e(TAG, e.getMessage());
                 e.printStackTrace();
             }
         } else {
