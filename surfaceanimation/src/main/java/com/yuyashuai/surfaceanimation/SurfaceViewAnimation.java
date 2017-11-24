@@ -117,15 +117,14 @@ public final class SurfaceViewAnimation {
         public Builder(@NonNull SurfaceView surfaceView, @NonNull String assetPath) {
             AssetManager assetManager = surfaceView.getContext().getAssets();
             try {
-                String assetFiles[] = assetManager.list(assetPath);
+                String[] assetFiles = assetManager.list(assetPath);
                 if (assetFiles.length == 0) {
                     Log.e(TAG, "no file in this asset directory");
                     return;
                 }
                 //转换真实路径
-                for(int i=0;i<assetFiles.length;i++)
-                {
-                    assetFiles[i]=assetPath+File.separator+assetFiles[i];
+                for (int i = 0; i < assetFiles.length; i++) {
+                    assetFiles[i] = assetPath + File.separator + assetFiles[i];
                 }
                 List<String> mAssertList = Arrays.asList(assetFiles);
                 mAnimation = new SurfaceViewAnimation();
@@ -212,8 +211,7 @@ public final class SurfaceViewAnimation {
             return;
         }
         //从文件中读取
-        if(!isAssetResource)
-        {
+        if (!isAssetResource) {
             File file = new File(mPathList.get(0));
             if (!file.exists()) {
                 return;
@@ -232,7 +230,9 @@ public final class SurfaceViewAnimation {
     }
 
     public void stop() {
-        if(!isDrawing()) return;
+        if (!isDrawing()) {
+            return;
+        }
         mCallBack.stopAnim();
     }
 
@@ -253,8 +253,14 @@ public final class SurfaceViewAnimation {
     }
 
     public interface AnimationStateListener {
+        /**
+         * 动画开始
+         */
         void onStart();
 
+        /**
+         * 动画结束
+         */
         void onFinish();
     }
 
@@ -268,7 +274,6 @@ public final class SurfaceViewAnimation {
 
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
-
         }
 
         @Override
@@ -278,7 +283,9 @@ public final class SurfaceViewAnimation {
 
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
-
+            if (isDrawing) {
+                stopAnim();
+            }
         }
 
         /**
@@ -309,11 +316,13 @@ public final class SurfaceViewAnimation {
             }
             mCurrentBitmap = mBitmapCache.get(position);
             mDecodeHandler.sendEmptyMessage(position);
-            mCanvas = mSurfaceHolder.lockCanvas(rect);
+            mCanvas = mSurfaceHolder.lockCanvas();
             if (mCanvas == null) {
                 return;
             }
             mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            //rect.set(0,0,1000,1500);
+            //Log.w("yys",rect.toShortString());
             mCanvas.drawBitmap(mCurrentBitmap, null, rect, null);
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
             mCurrentBitmap.recycle();
@@ -321,10 +330,29 @@ public final class SurfaceViewAnimation {
         }
 
         private void clearSurface() {
-            mCanvas = mSurfaceHolder.lockCanvas();
-            //clear surfaceView
-            mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+            try {
+                mCanvas = mSurfaceHolder.lockCanvas();
+                if (mCanvas != null) {
+                    mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                }
+                //mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+            } catch (Exception e) {
+                e.printStackTrace();
+                //强行停止
+                if (mDecodeHandler != null) {
+                    mDecodeHandler.sendEmptyMessage(CMD_STOP_ANIMATION);
+                }
+                if (drawThread != null) {
+                    drawThread.interrupt();
+                }
+                if (mAnimationStateListener != null) {
+                    mAnimationStateListener.onFinish();
+                }
+            } finally {
+                if (mCanvas != null) {
+                    mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+                }
+            }
         }
 
         private void startAnim() {
@@ -333,7 +361,6 @@ public final class SurfaceViewAnimation {
             }
             isDrawing = true;
             position = 0;
-
             //绘制线程
             drawThread = new Thread() {
                 @Override
@@ -360,12 +387,10 @@ public final class SurfaceViewAnimation {
             mBitmapCache.clear();
             clearSurface();
             //mPathList.clear();
-            if(mDecodeHandler!=null)
-            {
+            if (mDecodeHandler != null) {
                 mDecodeHandler.sendEmptyMessage(CMD_STOP_ANIMATION);
             }
-            if(drawThread!=null)
-            {
+            if (drawThread != null) {
                 drawThread.interrupt();
             }
             if (mAnimationStateListener != null) {
@@ -433,23 +458,21 @@ public final class SurfaceViewAnimation {
 
     /**
      * 根据不同的情况，选择不同的加载方式
+     *
      * @param path
      * @return
      */
-    private Bitmap decodeBitmapReal(String path)
-    {
-        if(isAssetResource)
-        {
+    private Bitmap decodeBitmapReal(String path) {
+        if (isAssetResource) {
             try {
                 return BitmapFactory.decodeStream(mAssetManager.open(path));
             } catch (IOException e) {
                 stop();
-                Log.e(TAG,"IOException, animation stop");
-                Log.e(TAG,e.getMessage());
+                Log.e(TAG, "IOException, animation stop");
+                Log.e(TAG, e.getMessage());
                 e.printStackTrace();
             }
-        }else
-        {
+        } else {
             return BitmapFactory.decodeFile(path);
         }
         return null;

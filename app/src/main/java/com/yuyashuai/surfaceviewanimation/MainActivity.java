@@ -12,15 +12,16 @@ import com.yuyashuai.surfaceanimation.SurfaceViewAnimation;
 public class MainActivity extends AppCompatActivity {
 
 
+    private SurfaceViewAnimation surfaceViewAnimation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SurfaceView mSurfaceView=  (SurfaceView) findViewById(R.id.sv_main);
-        Button btnStart= (Button) findViewById(R.id.btn_start);
-        Button btnStop= (Button) findViewById(R.id.btn_stop);
-        final SurfaceViewAnimation surfaceViewAnimation=
-                new SurfaceViewAnimation.Builder(mSurfaceView,"crow")
+        SurfaceView mSurfaceView = (SurfaceView) findViewById(R.id.sv_main);
+        Button btnStart = (Button) findViewById(R.id.btn_start);
+        Button btnStop = (Button) findViewById(R.id.btn_stop);
+        surfaceViewAnimation = new SurfaceViewAnimation.Builder(mSurfaceView, "crow")
                 .setRepeatMode(SurfaceViewAnimation.MODE_INFINITE)
                 .build();
                 /*new SurfaceViewAnimation.Builder(mSurfaceView,file)
@@ -44,5 +45,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //surfaceViewAnimation.stop();
     }
 }
