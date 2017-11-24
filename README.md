@@ -22,3 +22,16 @@ SurfaceViewAnimation surfaceViewAnimation=
 ```
 #### 帧动画命名
 推荐以数字名称，并且必须严格按照顺序，且长度保持一致。
+
+#### 更新 2017-11-24
+增加了对帧图片缩放模式的支持,与ImageView的缩放模式一致，默认为FIT_CENTER
+```
+ new SurfaceViewAnimation.Builder(mSurfaceView,file)
+                .setRepeatMode(SurfaceViewAnimation.MODE_ONCE)
+                .setFrameInterval(80)
+                .setScaleType(SurfaceViewAnimation.SCALE_TYPE_CENTER_INSIDE)
+                .build();
+
+
+```
+
