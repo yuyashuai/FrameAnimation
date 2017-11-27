@@ -1,4 +1,4 @@
-package com.yuyashuai.surfaceanimation;
+package com.yuyashuai.silkyanimation;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -33,7 +33,7 @@ import java.util.List;
  * use SurfaceView play Frame Animation
  */
 
-public final class SurfaceViewAnimation {
+public final class SilkyAnimation {
 
     /**
      * 缓存的图片
@@ -103,7 +103,7 @@ public final class SurfaceViewAnimation {
      */
     public static final int MODE_INFINITE = 2;
 
-    private SurfaceViewAnimation() {
+    private SilkyAnimation() {
         mBitmapCache = new SparseArray<>();
     }
 
@@ -172,10 +172,10 @@ public final class SurfaceViewAnimation {
 
         private final String TAG = "SurfaceViewAnimation";
 
-        private SurfaceViewAnimation mAnimation;
+        private SilkyAnimation mAnimation;
 
         public Builder(@NonNull SurfaceView surfaceView, @NonNull List<String> pathList) {
-            mAnimation = new SurfaceViewAnimation();
+            mAnimation = new SilkyAnimation();
             mAnimation.init(surfaceView, pathList);
         }
 
@@ -196,7 +196,7 @@ public final class SurfaceViewAnimation {
                     assetFiles[i] = assetPath + File.separator + assetFiles[i];
                 }
                 List<String> mAssertList = Arrays.asList(assetFiles);
-                mAnimation = new SurfaceViewAnimation();
+                mAnimation = new SilkyAnimation();
                 mAnimation.isAssetResource = true;
                 mAnimation.setAssetManager(assetManager);
                 mAnimation.init(surfaceView, mAssertList);
@@ -226,7 +226,7 @@ public final class SurfaceViewAnimation {
             } else {
                 Log.e(TAG, "file is null");
             }
-            mAnimation = new SurfaceViewAnimation();
+            mAnimation = new SilkyAnimation();
             mAnimation.init(surfaceView, list);
         }
 
@@ -265,7 +265,7 @@ public final class SurfaceViewAnimation {
             return this;
         }
 
-        public SurfaceViewAnimation build() {
+        public SilkyAnimation build() {
             return mAnimation;
         }
 
@@ -545,10 +545,15 @@ public final class SurfaceViewAnimation {
         }
 
         private void clearSurface() {
-            mCanvas = mSurfaceHolder.lockCanvas();
-            mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mSurfaceHolder.unlockCanvasAndPost(mCanvas);
-
+            try {
+                mCanvas = mSurfaceHolder.lockCanvas();
+                if (mCanvas != null) {
+                    mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                    mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         private void startAnim() {

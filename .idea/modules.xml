@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SurfaceViewFrameAnimation.iml" filepath="$PROJECT_DIR$/SurfaceViewFrameAnimation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SilkyAnimationMaster.iml" filepath="$PROJECT_DIR$/SilkyAnimationMaster.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/surfaceanimation/surfaceanimation.iml" filepath="$PROJECT_DIR$/surfaceanimation/surfaceanimation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/silkyanimation/silkyanimation.iml" filepath="$PROJECT_DIR$/silkyanimation/silkyanimation.iml" />
     </modules>
   </component>
 </project>

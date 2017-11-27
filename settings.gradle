@@ -1,1 +1,1 @@
-include ':app', ':surfaceanimation'
+include ':app', ':silkyanimation'

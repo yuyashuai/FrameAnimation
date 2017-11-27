@@ -1,4 +1,4 @@
-package com.yuyashuai.surfaceanimation;
+package com.yuyashuai.silkyanimation;
 
 import org.junit.Test;
 

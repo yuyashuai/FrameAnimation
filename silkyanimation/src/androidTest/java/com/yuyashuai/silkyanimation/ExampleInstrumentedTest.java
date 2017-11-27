@@ -1,4 +1,4 @@
-package com.yuyashuai.surfaceanimation;
+package com.yuyashuai.silkyanimation;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
