@@ -23,7 +23,7 @@ SilkyAnimation mAnimation=
 #### 帧动画命名
 推荐以数字名称，并且必须严格按照顺序，且长度保持一致。
 #### issue
-如果使用中有任务问题，请直接[添加issue](https://github.com/yuyashuai/SilkyAnimation/issues/new),会及时回复
+如果使用中有任何问题，请直接[添加issue](https://github.com/yuyashuai/SilkyAnimation/issues/new),会及时回复
 
 #### 更新 2017-11-24
 增加了对帧图片缩放模式的支持,与ImageView的缩放模式一致，默认为`FIT_CENTER`，也可以通过`setMatrix()`方法来指定任意形变。
