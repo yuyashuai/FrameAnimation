@@ -26,19 +26,14 @@ public class MainActivity extends AppCompatActivity {
         surfaceViewAnimation = new SurfaceViewAnimation.Builder(mSurfaceView, "blacktest")
                 .setRepeatMode(SurfaceViewAnimation.MODE_INFINITE)
                 .setScaleType(SurfaceViewAnimation.SCALE_TYPE_CENTER_INSIDE)
-                .setFrameInterval(300)
+                .setFrameInterval(5)
+                .setCacheCount(200)
                 .build();
-                /*new SurfaceViewAnimation.Builder(mSurfaceView,file)
-                .setRepeatMode(SurfaceViewAnimation.MODE_INFINITE)
-                .setFrameInterval(80)
-                .setCacheCount(8)
-                .build();*/
 
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //you should put your frame animation in ExternalStorageDirectory/zzzz/
-                surfaceViewAnimation.start();
+                surfaceViewAnimation.start(6);
             }
         });
         btnStop.setOnClickListener(new View.OnClickListener() {
@@ -47,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
                 surfaceViewAnimation.stop();
             }
         });
-
     }
 
     @Override

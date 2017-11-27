@@ -80,6 +80,11 @@ public final class SurfaceViewAnimation {
     private AnimationStateListener mAnimationStateListener;
 
     /**
+     * callback of unexcepted stop
+     */
+    private UnexceptedStopListener mUnexceptedListener;
+
+    /**
      * start animation command.
      */
     private final int CMD_START_ANIMATION = -1;
@@ -150,6 +155,11 @@ public final class SurfaceViewAnimation {
      * 确保X或者Y至少有一个填充满屏幕
      */
     public static final int SCALE_TYPE_CENTER_INSIDE = 7;
+
+    /**
+     * 第一帧动画的偏移量
+     */
+    private int startOffset = 0;
 
     @IntDef({SCALE_TYPE_FIT_XY, SCALE_TYPE_FIT_START, SCALE_TYPE_FIT_CENTER, SCALE_TYPE_FIT_END,
             SCALE_TYPE_CENTER, SCALE_TYPE_CENTER_CROP, SCALE_TYPE_CENTER_INSIDE})
@@ -240,6 +250,11 @@ public final class SurfaceViewAnimation {
             return this;
         }
 
+        public Builder setUnexceptedStopListener(@NonNull UnexceptedStopListener listener) {
+            mAnimation.setUnexceptedStopListener(listener);
+            return this;
+        }
+
         public Builder setRepeatMode(@RepeatMode int mode) {
             mAnimation.setRepeatMode(mode);
             return this;
@@ -266,13 +281,23 @@ public final class SurfaceViewAnimation {
         mSurfaceView.setZOrderOnTop(true);
         mSurfaceHolder.addCallback(mCallBack);
         this.mPathList = pathList;
+        if (mCacheCount > mPathList.size()) {
+            mCacheCount = mPathList.size();
+        }
     }
 
 
     public void start() {
+        start(0);
+    }
+
+    public void start(int position) {
+        startOffset = position;
+        if (startOffset >= mPathList.size()) {
+            throw new IndexOutOfBoundsException("invalid index " + position + ", size is " + mPathList.size());
+        }
         if (mCallBack.isDrawing) {
             return;
-            //stopAnimation();
         }
         if (mPathList == null) {
             throw new NullPointerException("pathList can not be null.");
@@ -291,6 +316,7 @@ public final class SurfaceViewAnimation {
         startDecodeThread();
     }
 
+
     private void setAssetManager(AssetManager assetManager) {
         this.mAssetManager = assetManager;
     }
@@ -305,7 +331,7 @@ public final class SurfaceViewAnimation {
     /**
      * 给定绘制bitmap的matrix不能和设置ScaleType同时起作用
      *
-     * @param matrix
+     * @param matrix 绘制bitmap时应用的matrix
      */
     public void setMatrix(@NonNull Matrix matrix) {
         if (matrix == null) {
@@ -412,6 +438,9 @@ public final class SurfaceViewAnimation {
 
     private void setCacheCount(int count) {
         mCacheCount = count;
+        if (mCacheCount > mPathList.size()) {
+            mCacheCount = mPathList.size();
+        }
     }
 
     private void setRepeatMode(@RepeatMode int mode) {
@@ -422,10 +451,17 @@ public final class SurfaceViewAnimation {
         return mCallBack.isDrawing;
     }
 
-    private void setAnimationStateListener(AnimationStateListener animationStateListener) {
+    public void setAnimationStateListener(AnimationStateListener animationStateListener) {
         this.mAnimationStateListener = animationStateListener;
     }
 
+    public void setUnexceptedStopListener(UnexceptedStopListener unexceptedStopListener) {
+        this.mUnexceptedListener = unexceptedStopListener;
+    }
+
+    /**
+     * Animation状态监听
+     */
     public interface AnimationStateListener {
         /**
          * 动画开始
@@ -438,10 +474,22 @@ public final class SurfaceViewAnimation {
         void onFinish();
     }
 
+    /**
+     * 异常停止监听
+     */
+    public interface UnexceptedStopListener {
+        /**
+         * 异常停止时触发，比如home键被按下，直接锁屏，旋转屏幕等
+         * 记录此位置后，可以通过调用{@link #start(int)}恢复动画
+         *
+         * @param position 异常停止时，帧动画播放的位置
+         */
+        void onUnexceptedStop(int position);
+    }
+
     private class MyCallBack implements SurfaceHolder.Callback {
         private Canvas mCanvas;
-        private Bitmap mCurrentBitmap;
-        private int position = 0;
+        private int position;
         private boolean isDrawing = false;
         private Thread drawThread;
 
@@ -458,6 +506,9 @@ public final class SurfaceViewAnimation {
         public void surfaceDestroyed(SurfaceHolder holder) {
             if (isDrawing) {
                 stopAnim();
+                if (mUnexceptedListener != null) {
+                    mUnexceptedListener.onUnexceptedStop(getCorrectPosition());
+                }
             }
         }
 
@@ -465,64 +516,39 @@ public final class SurfaceViewAnimation {
          * 绘制
          */
         private void drawBitmap() {
-
             //当循环播放时，获取真实的position
             if (mode == MODE_INFINITE && position >= mTotalCount) {
                 position = position % mTotalCount;
             }
-
             if (position >= mTotalCount) {
-                isDrawing = false;
-                mDecodeHandler.sendEmptyMessage(-2);
-                //clear surfaceView
+                mDecodeHandler.sendEmptyMessage(CMD_STOP_ANIMATION);
                 clearSurface();
                 return;
             }
             if (mBitmapCache.get(position, null) == null) {
-                mCanvas = mSurfaceHolder.lockCanvas();
-                if (mCanvas == null) {
-                    return;
-                }
-                clearSurface();
+                Log.e(TAG, "get bitmap in position: " + position + " is null ,animation was forced to stop");
+                stopAnim();
                 return;
             }
-            mCurrentBitmap = mBitmapCache.get(position);
+            final Bitmap currentBitmap = mBitmapCache.get(position);
             mDecodeHandler.sendEmptyMessage(position);
             mCanvas = mSurfaceHolder.lockCanvas();
             if (mCanvas == null) {
                 return;
             }
             mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            configureDrawMatrix(mCurrentBitmap);
-            mCanvas.drawBitmap(mCurrentBitmap, mDrawMatrix, null);
+            configureDrawMatrix(currentBitmap);
+            mCanvas.drawBitmap(currentBitmap, mDrawMatrix, null);
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
-            mCurrentBitmap.recycle();
+            currentBitmap.recycle();
             position++;
         }
 
         private void clearSurface() {
-            try {
-                mCanvas = mSurfaceHolder.lockCanvas();
-                if (mCanvas != null) {
-                    mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                //强行停止
-                if (mDecodeHandler != null) {
-                    mDecodeHandler.sendEmptyMessage(CMD_STOP_ANIMATION);
-                }
-                if (drawThread != null) {
-                    drawThread.interrupt();
-                }
-                if (mAnimationStateListener != null) {
-                    mAnimationStateListener.onFinish();
-                }
-            } finally {
-                if (mCanvas != null) {
-                    mSurfaceHolder.unlockCanvasAndPost(mCanvas);
-                }
-            }
+            mCanvas = mSurfaceHolder.lockCanvas();
+            mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+
         }
 
         private void startAnim() {
@@ -530,7 +556,7 @@ public final class SurfaceViewAnimation {
                 mAnimationStateListener.onStart();
             }
             isDrawing = true;
-            position = 0;
+            position = startOffset;
             //绘制线程
             drawThread = new Thread() {
                 @Override
@@ -551,12 +577,21 @@ public final class SurfaceViewAnimation {
             drawThread.start();
         }
 
+        private int getCorrectPosition() {
+            if (mode == MODE_INFINITE && position >= mTotalCount) {
+                return position % mTotalCount;
+            }
+            return position;
+        }
+
         private void stopAnim() {
+            if (!isDrawing) {
+                return;
+            }
             isDrawing = false;
             position = 0;
             mBitmapCache.clear();
             clearSurface();
-            //mPathList.clear();
             if (mDecodeHandler != null) {
                 mDecodeHandler.sendEmptyMessage(CMD_STOP_ANIMATION);
             }
@@ -606,9 +641,13 @@ public final class SurfaceViewAnimation {
      */
     private void decodeBitmap(int position) {
         if (position == CMD_START_ANIMATION) {
-            for (int i = 0; i < mCacheCount; i++) {
-                if (mPathList.size() <= i) break;
-                mBitmapCache.put(i, decodeBitmapReal(mPathList.get(i)));
+            //初始化存储
+            for (int i = startOffset; i < mCacheCount + startOffset; i++) {
+                int putPosition = i;
+                if (putPosition > mTotalCount - 1) {
+                    putPosition = putPosition % mTotalCount;
+                }
+                mBitmapCache.put(putPosition, decodeBitmapReal(mPathList.get(putPosition)));
             }
             mCallBack.startAnim();
         } else if (position == CMD_STOP_ANIMATION) {
