@@ -34,7 +34,8 @@ public class MainActivity extends AppCompatActivity {
                 .setScaleType(SilkyAnimation.SCALE_TYPE_CENTER)
                 .setRepeatMode(SilkyAnimation.MODE_INFINITE)
                 .build();
-        //如果需要在onCreate方法中直接调用，通过handler.postDelayed添加一个时延
+        //如果需要在onCreate方法中直接调用开始，通过handler.postDelayed添加一个时延
+        //if you call start() in onCreate method,use handler.postDelayed add a time delay to call it.
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -42,15 +43,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 40);
 
-        //从文件读取
-        final File file = new File(Environment.getExternalStorageDirectory() + File.separator + "huabnyu");
+        //从文件读取 file resources
+        final File file = new File(Environment.getExternalStorageDirectory() + File.separator + "huabanyu");
         btnStartFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 silkyAnimation.start(file);
             }
         });
-        //从assets读取
+        //从assets读取 assets resources
         btnStartAssets.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
