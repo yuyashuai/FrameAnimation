@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -9,23 +8,31 @@
 
     <SurfaceView
         android:id="@+id/sv_main"
-        android:layout_marginBottom="50dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-    />
+        android:layout_marginBottom="50dp" />
+
     <Button
-        android:layout_marginLeft="20dp"
-        android:layout_alignParentBottom="true"
-        android:text="start"
-        android:id="@+id/btn_start"
+        android:id="@+id/btn_start_file"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-    <Button
-        android:layout_marginRight="20dp"
-        android:layout_alignParentRight="true"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="stop"
+        android:layout_marginLeft="20dp"
+        android:text="startFile" />
+    <Button
+        android:layout_centerHorizontal="true"
+        android:id="@+id/btn_start_assets"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="20dp"
+        android:text="startAssets" />
+    <Button
         android:id="@+id/btn_stop"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:text="stop" />
 </RelativeLayout>

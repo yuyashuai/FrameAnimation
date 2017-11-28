@@ -1,41 +1,61 @@
 ## SilkyAnimation
 Use SurfaceView instead of Android AnimationDrawable to achieve Frame Animation that contains lots of pictures.
 effectively avoid OOM and ANR while decode many pictures.
-用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。
+用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。支持任意多帧的动画。
 ### 下载
 #### gradle   
-`compile 'com.yuyashuai.android:silkyanimation:1.1.3'`  
+`compile 'com.yuyashuai.android:silkyanimation:1.1.4'`  
 #### maven  
 ```
 <dependency>
   <groupId>com.yuyashuai.android</groupId>
   <artifactId>silkyanimation</artifactId>
-  <version>1.1.3</version>
+  <version>1.1.4</version>
   <type>pom</type>
 </dependency>
 ```
 #### jar包
-[下载jar包](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.3/silkyanimation-1.1.3-sources.jar)
+[下载jar包](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.3/silkyanimation-1.1.4-sources.jar)
 ### 使用
-#### 从文件目录中读取资源
+
 ```
 SilkyAnimation mAnimation=
-                new SilkyAnimation.Builder(mSurfaceView,file)
-                .setRepeatMode(SilkyAnimation.MODE_ONCE)
-                .setFrameInterval(80)
+                new SilkyAnimation.Builder(mSurfaceView)
                 .build();
-mAnimation.start();
 ```
-#### 从assets目录中读取资源
-如果传入的是assets下的一级目录，那么只需要传入文件夹名称，如果是二级目录，那么需要传入这个目录的完整路径
+##### 从文件目录中读取资源
 ```
-SilkyAnimation mAnimation=
-                new SilkyAnimation.Builder(mSurfaceView,"crow")
+//file为资源文件的目录
+File file=new FIle(Environment.getExternalStorageDirectory() + File.separator + "bird")
+mAnimation.start(file);
+
+```
+##### 从assets目录中读取资源
+如果传入的是assets下的*一级目录*，那么只需要传入文件夹名称，如果是*二级目录*，那么需要传入这个目录的完整路径
+```
+//一级目录
+String asssetsPath="bird";
+//二级目录
+String assetsPath="bird/corw";
+
+mAnimation.start(assetsPath);
+
+```
+#### 更多设置
+```                
+new SilkyAnimation.Builder(mSurfaceView)
+                //设置常驻内存的缓存数量, 默认5
+                .setCacheCount(8)
+                //设置帧间隔, 默认100
+                .setFrameInterval(80)
+                //设置缩放类型, 默认fit center
+                .setScaleType(SilkyAnimation.SCALE_TYPE_FIT_END)
+                //设置动画开始结束状态监听
+                .setAnimationListener(listener)
+                //设置循环模式, 默认不循环
                 .setRepeatMode(SilkyAnimation.MODE_INFINITE)
                 .build();
 ```
-#### 帧动画命名
-推荐以数字名称，并且必须严格按照顺序，且长度保持一致。
 #### issue
 如果使用中有任何问题，请直接[添加issue](https://github.com/yuyashuai/SilkyAnimation/issues/new),会及时回复
 

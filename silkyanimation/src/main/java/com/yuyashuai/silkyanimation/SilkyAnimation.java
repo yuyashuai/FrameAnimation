@@ -1,5 +1,6 @@
 package com.yuyashuai.silkyanimation;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,6 +27,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,15 +48,16 @@ public final class SilkyAnimation {
      */
     private List<String> mPathList;
     private MyCallBack mCallBack;
-    private int mode = MODE_INFINITE;
+    private int mode = MODE_ONCE;
     /**
      * 是否从asset中读取资源
      */
     private boolean isAssetResource = false;
     private AssetManager mAssetManager;
-    private final String TAG = "SurfaceViewAnimation";
+    private final String TAG = "SilkyAnimation";
     private Matrix mDrawMatrix;
     private int mScaleType;
+    private Context mContext;
     /**
      * total frames.
      */
@@ -70,10 +73,14 @@ public final class SilkyAnimation {
      */
     private int mFrameInterval = 100;
     /**
-     * number of frames resides in memory.
+     * number of frames resides in memory. real cache count
      */
     private int mCacheCount = 5;
 
+    /**
+     * pass cache count
+     */
+    private int mPassCacheCount = 5;
     /**
      * callback of animation state.
      */
@@ -170,81 +177,84 @@ public final class SilkyAnimation {
 
     public static class Builder {
 
-        private final String TAG = "SurfaceViewAnimation";
-
         private SilkyAnimation mAnimation;
 
+        @Deprecated
         public Builder(@NonNull SurfaceView surfaceView, @NonNull List<String> pathList) {
             mAnimation = new SilkyAnimation();
-            mAnimation.init(surfaceView, pathList);
+            mAnimation.init(surfaceView);
+            mAnimation.initPathList(pathList);
         }
 
         /**
          * @param surfaceView
          * @param assetPath   asset resource path, must be a directory
          */
+        @Deprecated
         public Builder(@NonNull SurfaceView surfaceView, @NonNull String assetPath) {
-            AssetManager assetManager = surfaceView.getContext().getAssets();
-            try {
-                String[] assetFiles = assetManager.list(assetPath);
-                if (assetFiles.length == 0) {
-                    Log.e(TAG, "no file in this asset directory");
-                    return;
-                }
-                //转换真实路径
-                for (int i = 0; i < assetFiles.length; i++) {
-                    assetFiles[i] = assetPath + File.separator + assetFiles[i];
-                }
-                List<String> mAssertList = Arrays.asList(assetFiles);
-                mAnimation = new SilkyAnimation();
-                mAnimation.isAssetResource = true;
-                mAnimation.setAssetManager(assetManager);
-                mAnimation.init(surfaceView, mAssertList);
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-                e.printStackTrace();
-            }
+            mAnimation = new SilkyAnimation();
+            mAnimation.init(surfaceView);
+            mAnimation.initPathList(mAnimation.getPathList(assetPath));
         }
 
         /**
          * @param surfaceView
          * @param file        must be a directory
          */
+        @Deprecated
         public Builder(@NonNull SurfaceView surfaceView, @NonNull File file) {
-            List<String> list = new ArrayList<>();
-            if (file != null) {
-                if (file.exists() && file.isDirectory()) {
-                    File[] files = file.listFiles();
-                    for (File mFrameFile : files) {
-                        list.add(mFrameFile.getAbsolutePath());
-                    }
-                } else if (!file.exists()) {
-                    Log.e(TAG, "file doesn't exists");
-                } else {
-                    Log.e(TAG, "file isn't a directory");
-                }
-            } else {
-                Log.e(TAG, "file is null");
-            }
             mAnimation = new SilkyAnimation();
-            mAnimation.init(surfaceView, list);
+            mAnimation.init(surfaceView);
+            mAnimation.initPathList(mAnimation.getPathList(file));
         }
 
+        /**
+         * @param surfaceView
+         */
+        public Builder(@NonNull SurfaceView surfaceView) {
+            mAnimation = new SilkyAnimation();
+            mAnimation.init(surfaceView);
+        }
+
+        /**
+         * set time interval between two frames.
+         *
+         * @param timeMillisecond time interval between two frames.
+         * @return
+         */
         public Builder setFrameInterval(@IntRange(from = 1) int timeMillisecond) {
             mAnimation.setFrameInterval(timeMillisecond);
             return this;
         }
 
+        /**
+         * set number of frames resides in memory
+         *
+         * @param count number of frames resides in memory.
+         * @return
+         */
         public Builder setCacheCount(@IntRange(from = 1) int count) {
             mAnimation.setCacheCount(count);
             return this;
         }
 
+        /**
+         * set Matrix
+         *
+         * @param matrix matrix hold the shape
+         * @return
+         */
         public Builder setMatrix(@NonNull Matrix matrix) {
             mAnimation.setMatrix(matrix);
             return this;
         }
 
+        /**
+         * 设置AnimationStateListener
+         *
+         * @param listener
+         * @return
+         */
         public Builder setAnimationListener(@NonNull AnimationStateListener listener) {
             mAnimation.setAnimationStateListener(listener);
             return this;
@@ -255,11 +265,23 @@ public final class SilkyAnimation {
             return this;
         }
 
+        /**
+         * set repeat mode
+         *
+         * @param mode
+         * @return
+         */
         public Builder setRepeatMode(@RepeatMode int mode) {
             mAnimation.setRepeatMode(mode);
             return this;
         }
 
+        /**
+         * set scale type,same as ImageView
+         *
+         * @param type
+         * @return
+         */
         public Builder setScaleType(@ScaleType int type) {
             mAnimation.setScaleType(type);
             return this;
@@ -271,39 +293,177 @@ public final class SilkyAnimation {
 
     }
 
-    private void init(SurfaceView surfaceView, List<String> pathList) {
+    /**
+     * 初始化
+     *
+     * @param surfaceView
+     */
+    private void init(SurfaceView surfaceView) {
         this.mSurfaceView = surfaceView;
         this.mSurfaceHolder = surfaceView.getHolder();
+        mContext = surfaceView.getContext();
         mDrawMatrix = new Matrix();
         mScaleType = SCALE_TYPE_FIT_CENTER;
         mCallBack = new MyCallBack();
         mSurfaceHolder.setFormat(PixelFormat.TRANSLUCENT);
         mSurfaceView.setZOrderOnTop(true);
         mSurfaceHolder.addCallback(mCallBack);
+    }
+
+    /**
+     * 通过assets资源转换pathList
+     *
+     * @param assetsPath assets resource path, must be a directory
+     * @return if assets  does not exist return a empty list
+     */
+    private List<String> getPathList(String assetsPath) {
+        AssetManager assetManager = mContext.getAssets();
+        try {
+            String[] assetFiles = assetManager.list(assetsPath);
+            if (assetFiles.length == 0) {
+                Log.e(TAG, "no file in this asset directory");
+                return new ArrayList<>(0);
+            }
+            //转换真实路径
+            for (int i = 0; i < assetFiles.length; i++) {
+                assetFiles[i] = assetsPath + File.separator + assetFiles[i];
+            }
+            List<String> mAssertList = Arrays.asList(assetFiles);
+            isAssetResource = true;
+            setAssetManager(assetManager);
+            return mAssertList;
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
+        }
+        return new ArrayList<>(0);
+    }
+
+    /**
+     * 通过File资源转换pathList
+     *
+     * @param file the resources directory
+     * @return if file does not exist return a empty list
+     */
+    private List<String> getPathList(File file) {
+        List<String> list = new ArrayList<>();
+        if (file != null) {
+            if (file.exists() && file.isDirectory()) {
+                File[] files = file.listFiles();
+                for (File mFrameFile : files) {
+                    list.add(mFrameFile.getAbsolutePath());
+                }
+            } else if (!file.exists()) {
+                Log.e(TAG, "file doesn't exists");
+            } else {
+                Log.e(TAG, "file isn't a directory");
+            }
+        } else {
+            Log.e(TAG, "file is null");
+        }
+        isAssetResource = false;
+        return list;
+    }
+
+    private void initPathList(List<String> pathList) {
         this.mPathList = pathList;
+        //theoretically this must be not null, this exception will never happen
+        if (mPathList == null) {
+            throw new NullPointerException("pathList is null. ensure you have configured the resources correctly");
+        }
+        mCacheCount = mPassCacheCount;
         if (mCacheCount > mPathList.size()) {
             mCacheCount = mPathList.size();
         }
+        Collections.sort(pathList);
     }
 
-
-    public void start() {
+    /**
+     * start animation
+     *
+     * @param file the resources directory
+     */
+    public void start(File file) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        initPathList(getPathList(file));
         start(0);
     }
 
-    public void start(int position) {
-        startOffset = position;
-        if (startOffset >= mPathList.size()) {
-            throw new IndexOutOfBoundsException("invalid index " + position + ", size is " + mPathList.size());
-        }
+    /**
+     * start animation
+     *
+     * @param assetsPath assets resource path, must be a directory
+     */
+    public void start(String assetsPath) {
         if (mCallBack.isDrawing) {
-            return;
+            stop();
         }
+        initPathList(getPathList(assetsPath));
+        start(0);
+    }
+
+    /**
+     * start animation
+     *
+     * @param file     the resources directory
+     * @param position start offset
+     */
+    public void start(File file, int position) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        initPathList(getPathList(file));
+        start(position);
+    }
+
+    /**
+     * start animation
+     *
+     * @param assetsPath assets resource path, must be a directory
+     * @param position   start offset
+     */
+    public void start(String assetsPath, int position) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        initPathList(getPathList(assetsPath));
+        start(position);
+    }
+
+    /**
+     * start animation ,if you call this directly, you must initial the resources
+     * from{@link Builder#Builder(SurfaceView, File)} or {@link Builder#Builder(SurfaceView, String)} or {@link Builder#Builder(SurfaceView, List)}
+     */
+    @Deprecated
+    public void start() {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        start(0);
+    }
+
+    /**
+     * start animation ,if you call this directly, you must initial the resources
+     * from{@link Builder#Builder(SurfaceView, File)} or {@link Builder#Builder(SurfaceView, String)} or {@link Builder#Builder(SurfaceView, List)}
+     *
+     * @param position start offset
+     */
+    public void start(int position) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        startOffset = position;
         if (mPathList == null) {
-            throw new NullPointerException("pathList can not be null.");
+            throw new NullPointerException("the frame list is null. did you have configured the resources? if not please call start(file) or start(assetsPath)");
         }
-        if (mPathList.size() == 0) {
+        if (mPathList.isEmpty()) {
+            Log.e(TAG, "pathList is empty, nothing to display. ensure you have configured the resources correctly. check you file or assets dir ");
             return;
+        }
+        if (startOffset >= mPathList.size()) {
+            throw new IndexOutOfBoundsException("invalid startOffset index " + position + ", size is " + mPathList.size());
         }
         //从文件中读取
         if (!isAssetResource) {
@@ -437,10 +597,7 @@ public final class SilkyAnimation {
     };
 
     private void setCacheCount(int count) {
-        mCacheCount = count;
-        if (mCacheCount > mPathList.size()) {
-            mCacheCount = mPathList.size();
-        }
+        mPassCacheCount = count;
     }
 
     private void setRepeatMode(@RepeatMode int mode) {
@@ -645,12 +802,14 @@ public final class SilkyAnimation {
      * @param position 小于0时，为handler发出的命令. 大于0时为当前帧
      */
     private void decodeBitmap(int position) {
+        Log.i(TAG, "decode bitmap : " + position + "  " + mPathList.size() + "  " + startOffset);
         if (position == CMD_START_ANIMATION) {
             //初始化存储
             for (int i = startOffset; i < mCacheCount + startOffset; i++) {
                 int putPosition = i;
                 if (putPosition > mTotalCount - 1) {
                     putPosition = putPosition % mTotalCount;
+                    Log.i(TAG, "huancun: " + putPosition + "   " + i);
                 }
                 mBitmapCache.put(putPosition, decodeBitmapReal(mPathList.get(putPosition)));
             }
