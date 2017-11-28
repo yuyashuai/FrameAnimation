@@ -15,7 +15,7 @@ effectively avoid OOM and ANR while decode many pictures.
 </dependency>
 ```
 #### jar包
-[下载jar包](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.3/silkyanimation-1.1.4-sources.jar)
+[下载jar包](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.4/silkyanimation-1.1.4-sources.jar)
 ### 使用
 
 ```
