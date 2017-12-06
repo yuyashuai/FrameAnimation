@@ -78,6 +78,11 @@ public final class SilkyAnimation {
     private int mCacheCount = 5;
 
     /**
+     * 是否支持inBitmap
+     */
+    private boolean mSupportInBitmap = true;
+
+    /**
      * pass cache count
      */
     private int mPassCacheCount = 5;
@@ -266,6 +271,19 @@ public final class SilkyAnimation {
         }
 
         /**
+         * 设置是否支持inBitmap，支持inBitmap会非常显著的改善内存抖动的问题
+         * 因为存在bitmap复用的问题，当设置支持inBitmap时，请务必保证帧动画
+         * 所有的图片分辨率和颜色位数完全一致。默认为true。
+         *
+         * @param support
+         * @see <a href="google">https://developer.android.com/reference/android/graphics/BitmapFactory.Options.html#inBitmap</a>
+         */
+        public Builder setSupportInBitmap(boolean support) {
+            mAnimation.setSupportInBitmap(support);
+            return this;
+        }
+
+        /**
          * set repeat mode
          *
          * @param mode
@@ -308,6 +326,18 @@ public final class SilkyAnimation {
         mSurfaceHolder.setFormat(PixelFormat.TRANSLUCENT);
         mSurfaceView.setZOrderOnTop(true);
         mSurfaceHolder.addCallback(mCallBack);
+    }
+
+    /**
+     * 设置是否支持inBitmap，支持inBitmap会非常显著的改善内存抖动的问题
+     * 因为存在bitmap复用的问题，当设置支持inBitmap时，请务必保证帧动画
+     * 所有的图片分辨率和颜色位数完全一致。默认为true。
+     *
+     * @param support
+     * @see <a href="google">https://developer.android.com/reference/android/graphics/BitmapFactory.Options.html#inBitmap</a>
+     */
+    public void setSupportInBitmap(boolean support) {
+        this.mSupportInBitmap = support;
     }
 
     /**
@@ -451,6 +481,8 @@ public final class SilkyAnimation {
      * @param position start offset
      */
     public void start(int position) {
+        mInBitmapFlag = 0;
+        mInBitmap = null;
         if (mCallBack.isDrawing) {
             stop();
         }
@@ -459,7 +491,7 @@ public final class SilkyAnimation {
             throw new NullPointerException("the frame list is null. did you have configured the resources? if not please call start(file) or start(assetsPath)");
         }
         if (mPathList.isEmpty()) {
-            Log.e(TAG, "pathList is empty, nothing to display. ensure you have configured the resources correctly. check you file or assets dir ");
+            Log.e(TAG, "pathList is empty, nothing to display. ensure you have configured the resources correctly. check you file or assets directory ");
             return;
         }
         if (startOffset >= mPathList.size()) {
@@ -475,7 +507,6 @@ public final class SilkyAnimation {
         mTotalCount = mPathList.size();
         startDecodeThread();
     }
-
 
     private void setAssetManager(AssetManager assetManager) {
         this.mAssetManager = assetManager;
@@ -600,7 +631,7 @@ public final class SilkyAnimation {
         mPassCacheCount = count;
     }
 
-    private void setRepeatMode(@RepeatMode int mode) {
+    public void setRepeatMode(@RepeatMode int mode) {
         this.mode = mode;
     }
 
@@ -697,7 +728,6 @@ public final class SilkyAnimation {
             configureDrawMatrix(currentBitmap);
             mCanvas.drawBitmap(currentBitmap, mDrawMatrix, null);
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
-            currentBitmap.recycle();
             position++;
         }
 
@@ -763,7 +793,7 @@ public final class SilkyAnimation {
             if (mAnimationStateListener != null) {
                 mAnimationStateListener.onFinish();
             }
-
+            mInBitmap = null;
         }
     }
 
@@ -796,20 +826,39 @@ public final class SilkyAnimation {
     }
 
     /**
+     * in bitmap，避免频繁的GC
+     */
+    private Bitmap mInBitmap = null;
+    /**
+     * 作为一个标志位来标志是否应该初始化或者更新inBitmap，
+     * 因为SurfaceView的双缓存机制，不能绘制完成直接就覆盖上一个bitmap
+     * 此时surfaceView还没有post上一帧的数据，导致覆盖bitmap之后出现显示异常
+     */
+    private int mInBitmapFlag = 0;
+
+    /**
+     * 传入inBitmap时的decode参数
+     */
+    private BitmapFactory.Options mOptions;
+
+    /**
      * 根据不同指令 进行不同操作，
      * 根据position的位置来缓存position后指定数量的图片
      *
      * @param position 小于0时，为handler发出的命令. 大于0时为当前帧
      */
     private void decodeBitmap(int position) {
-        Log.i(TAG, "decode bitmap : " + position + "  " + mPathList.size() + "  " + startOffset);
         if (position == CMD_START_ANIMATION) {
             //初始化存储
+            if (mSupportInBitmap) {
+                mOptions = new BitmapFactory.Options();
+                mOptions.inMutable = true;
+                mOptions.inSampleSize = 1;
+            }
             for (int i = startOffset; i < mCacheCount + startOffset; i++) {
                 int putPosition = i;
                 if (putPosition > mTotalCount - 1) {
                     putPosition = putPosition % mTotalCount;
-                    Log.i(TAG, "huancun: " + putPosition + "   " + i);
                 }
                 mBitmapCache.put(putPosition, decodeBitmapReal(mPathList.get(putPosition)));
             }
@@ -818,17 +867,42 @@ public final class SilkyAnimation {
             mCallBack.stopAnim();
         } else if (mode == MODE_ONCE) {
             if (position + mCacheCount <= mTotalCount - 1) {
-                mBitmapCache.remove(position);
+                //由于surface的双缓冲，不能直接复用上一帧的bitmap，因为上一帧的bitmap可能还没有post
+                writeInBitmap(position);
                 mBitmapCache.put(position + mCacheCount, decodeBitmapReal(mPathList.get(position + mCacheCount)));
             }
+            //循环播放
         } else if (mode == MODE_INFINITE) {
+            //由于surface的双缓冲，不能直接复用上一帧的bitmap，上一帧的bitmap可能还没有post
+            writeInBitmap(position);
+            //播放到尾部时，取mod
             if (position + mCacheCount > mTotalCount - 1) {
-                mBitmapCache.remove(position);
                 mBitmapCache.put((position + mCacheCount) % mTotalCount, decodeBitmapReal(mPathList.get((position + mCacheCount) % mTotalCount)));
             } else {
-                mBitmapCache.remove(position);
                 mBitmapCache.put(position + mCacheCount, decodeBitmapReal(mPathList.get(position + mCacheCount)));
             }
+        }
+    }
+
+    /**
+     * 更新inBitmap
+     *
+     * @param position
+     */
+    private void writeInBitmap(int position) {
+        if (!mSupportInBitmap) {
+            mBitmapCache.remove(position);
+            return;
+        }
+        mInBitmapFlag++;
+        if (mInBitmapFlag > 1) {
+            int writePosition = position - 2;
+            //得到正确的position
+            if (writePosition < 0) {
+                writePosition = mTotalCount + writePosition;
+            }
+            mInBitmap = mBitmapCache.get(writePosition);
+            mBitmapCache.remove(writePosition);
         }
     }
 
@@ -839,16 +913,26 @@ public final class SilkyAnimation {
      * @return
      */
     private Bitmap decodeBitmapReal(String path) {
+        if (mInBitmap != null) {
+            mOptions.inBitmap = mInBitmap;
+        }
         if (isAssetResource) {
             try {
-                return BitmapFactory.decodeStream(mAssetManager.open(path));
+                Bitmap bitmap = BitmapFactory.decodeStream(mAssetManager.open(path), null, mOptions);
+                return bitmap;
             } catch (IOException e) {
                 stop();
                 e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                if (e.getMessage().contains("Problem decoding into existing bitmap") && mSupportInBitmap) {
+                    Log.e(TAG, "Make sure the resolution of all images is the same, if not call 'setSupportInBitmap(false)'.\n but this will lead to frequent gc ");
+                }
+                throw e;
             }
         } else {
-            return BitmapFactory.decodeFile(path);
+            return BitmapFactory.decodeFile(path, mOptions);
         }
         return null;
     }
+
 }

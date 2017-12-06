@@ -12,6 +12,12 @@
         android:layout_height="match_parent"
         android:layout_marginBottom="50dp" />
 
+    <ImageView
+        android:id="@+id/iv_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="50dp" />
+
     <Button
         android:id="@+id/btn_start_file"
         android:layout_width="wrap_content"
@@ -19,14 +25,16 @@
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="20dp"
         android:text="startFile" />
+
     <Button
-        android:layout_centerHorizontal="true"
         android:id="@+id/btn_start_assets"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginLeft="20dp"
         android:text="startAssets" />
+
     <Button
         android:id="@+id/btn_stop"
         android:layout_width="wrap_content"

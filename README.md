@@ -4,7 +4,7 @@ effectively avoid OOM and ANR while decode many pictures.
 用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。支持任意多帧的动画。
 ### 下载 Download
 #### gradle   
-`compile 'com.yuyashuai.android:silkyanimation:1.1.4'`  
+`compile 'com.yuyashuai.android:silkyanimation:1.1.6'`  
 #### maven  
 ```
 <dependency>
@@ -15,7 +15,7 @@ effectively avoid OOM and ANR while decode many pictures.
 </dependency>
 ```
 #### jar
-[download jar](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.4/silkyanimation-1.1.4-sources.jar)
+[download jar](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.6/silkyanimation-1.1.6-sources.jar)
 ### 使用 Usage
 
 ```
@@ -50,10 +50,12 @@ new SilkyAnimation.Builder(mSurfaceView)
                 .setCacheCount(8)
                 //设置帧间隔, 默认100
                 .setFrameInterval(80)
-                //设置缩放类型, 默认fit center
+                //设置缩放类型, 默认fit center，与ImageView的缩放模式通用
                 .setScaleType(SilkyAnimation.SCALE_TYPE_FIT_END)
                 //设置动画开始结束状态监听
                 .setAnimationListener(listener)
+                //设置是否支持bitmap复用，默认为true
+                .setSupportInBitmap(false)
                 //设置循环模式, 默认不循环
                 .setRepeatMode(SilkyAnimation.MODE_INFINITE)
                 .build();
@@ -62,16 +64,5 @@ new SilkyAnimation.Builder(mSurfaceView)
 如果使用中有任何问题，请直接[添加issues](https://github.com/yuyashuai/SilkyAnimation/issues/new),会及时回复。  
 If there is any problem with this, [add issues](https://github.com/yuyashuai/SilkyAnimation/issues/new) directly.  
 
-#### 更新 2017-11-24
-增加了对帧图片缩放模式的支持,与ImageView的缩放模式一致，默认为`FIT_CENTER`，也可以通过`setMatrix()`方法来指定任意形变。
-setMatrix()和setScaleType()不能同时生效
-```
- new SilkyAnimation.Builder(mSurfaceView,file)
-                .setRepeatMode(SilkyAnimation.MODE_ONCE)
-                .setFrameInterval(80)
-                .setScaleType(SilkyAnimation.SCALE_TYPE_CENTER_INSIDE)
-                .build();
 
-
-```
 
