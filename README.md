@@ -2,6 +2,7 @@
 Use SurfaceView instead of Android AnimationDrawable to achieve Frame Animation that contains lots of pictures.
 effectively avoid OOM and ANR while decode many pictures.  
 用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。支持任意多帧的动画。
+[CSDN](http://blog.csdn.net/qq_16445551/article/details/53367173)
 ### 下载 Download
 #### gradle   
 `compile 'com.yuyashuai.android:silkyanimation:1.1.6'`  
