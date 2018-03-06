@@ -52,7 +52,7 @@ new SilkyAnimation.Builder(mSurfaceView)
 ```
 #### issue
 如果使用中有任何问题，请直接[添加issues](https://github.com/yuyashuai/SilkyAnimation/issues/new),会及时回复。  
-If there is any problem with this, [add issues](https://github.com/yuyashuai/SilkyAnimation/issues/new) directly.  
+If there is any problems, [add issues](https://github.com/yuyashuai/SilkyAnimation/issues/new) directly.  
 
 
 
