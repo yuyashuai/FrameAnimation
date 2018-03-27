@@ -1,8 +1,5 @@
-## SilkyAnimation
-Use SurfaceView instead of Android AnimationDrawable to achieve Frame Animation that contains lots of pictures.
-effectively avoid OOM and ANR while decode many pictures.  
+## SilkyAnimation 
 用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。支持任意多帧的动画。
-[CSDN](http://blog.csdn.net/qq_16445551/article/details/53367173)
 ### 下载 Download
 #### jar
 [download jar](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.6/silkyanimation-1.1.6-sources.jar)
@@ -51,7 +48,7 @@ new SilkyAnimation.Builder(mSurfaceView)
                 .build();
 ```
 #### issue
-如果使用中有任何问题，请直接[添加issues](https://github.com/yuyashuai/SilkyAnimation/issues/new),会及时回复。  
+有任何问题，请直接[添加issues](https://github.com/yuyashuai/SilkyAnimation/issues/new)。  
 If there is any problems, [add issues](https://github.com/yuyashuai/SilkyAnimation/issues/new) directly.  
 
 
