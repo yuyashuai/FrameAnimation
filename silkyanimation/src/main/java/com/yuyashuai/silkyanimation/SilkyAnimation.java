@@ -397,7 +397,6 @@ public final class SilkyAnimation {
 
     private void initPathList(List<String> pathList) {
         this.mPathList = pathList;
-        //theoretically this must be not null, this exception will never happen
         if (mPathList == null) {
             throw new NullPointerException("pathList is null. ensure you have configured the resources correctly");
         }
@@ -411,7 +410,7 @@ public final class SilkyAnimation {
     /**
      * start animation
      *
-     * @param file the resources directory
+     * @param file the resources directory,
      */
     public void start(File file) {
         if (mCallBack.isDrawing) {
@@ -420,6 +419,64 @@ public final class SilkyAnimation {
         initPathList(getPathList(file));
         start(0);
     }
+
+
+    /**
+     * start animation
+     *
+     * @param filePathList the file resources path list
+     */
+    public void startWithFilePathList(List<String> filePathList) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        isAssetResource = false;
+        initPathList(filePathList);
+        start(0);
+    }
+
+    /**
+     * start animation
+     *
+     * @param filePathList the file resources path list
+     */
+    public void startWithFilePathList(List<String> filePathList, int position) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        isAssetResource = false;
+        initPathList(filePathList);
+        start(position);
+    }
+
+    /**
+     * start animation
+     *
+     * @param assetsPathList the file resources path list
+     */
+    public void startWithAssetsPathList(List<String> assetsPathList, int position) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        isAssetResource = true;
+        initPathList(assetsPathList);
+        start(position);
+    }
+
+    /**
+     * start animation
+     *
+     * @param assetsPathList the file resources path list
+     */
+    public void startWithAssetsPathList(List<String> assetsPathList) {
+        if (mCallBack.isDrawing) {
+            stop();
+        }
+        isAssetResource = true;
+        initPathList(assetsPathList);
+        start(0);
+    }
+
 
     /**
      * start animation

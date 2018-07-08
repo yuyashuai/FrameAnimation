@@ -10,7 +10,7 @@
         android:id="@+id/sv_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="50dp" />
+        android:layout_marginBottom="100dp" />
 
     <ImageView
         android:id="@+id/iv_main"
@@ -23,8 +23,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="20dp"
-        android:text="startFile" />
+        android:layout_marginStart="20dp"
+        android:text="file读取" />
 
     <Button
         android:id="@+id/btn_start_assets"
@@ -32,15 +32,32 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginLeft="20dp"
-        android:text="startAssets" />
+        android:layout_marginStart="20dp"
+        android:text="assets读取" />
 
     <Button
         android:id="@+id/btn_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="20dp"
-        android:text="stop" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="20dp"
+        android:text="停止" />
+    <Button
+        android:id="@+id/btn_start_files"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="50dp"
+        android:layout_marginEnd="20dp"
+        android:text="自定义file文件路径" />
+    <Button
+        android:id="@+id/btn_start_assets_files"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:layout_marginStart="20dp"
+        android:text="自定义assets文件路径" />
 </RelativeLayout>
