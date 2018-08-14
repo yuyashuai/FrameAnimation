@@ -1,10 +1,10 @@
 ## SilkyAnimation 
 用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。支持任意多帧的动画。
-### 下载 Download
-#### jar
-[download jar](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.6/silkyanimation-1.1.6-sources.jar)
 ### 使用 Usage
-
+#### Gradle引入
+```
+implementation 'com.yuyashuai.android:silkyanimation:1.1.6'
+```
 ```
 SilkyAnimation mAnimation=
                 new SilkyAnimation.Builder(mSurfaceView)
