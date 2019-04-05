@@ -1,3 +1,10 @@
+## 将要更新 
+**Deadline 2019-05-12**
+最近将更新以下内容
+1. 兼容TextureView
+2. 性能优化，显著改善高分辨率图，高帧率下的性能瓶颈
+3. 修复连续播放中间断帧
+4. 其它细节优化
 ## SilkyAnimation 
 用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。支持任意多帧的动画。
 ### 使用 Usage
