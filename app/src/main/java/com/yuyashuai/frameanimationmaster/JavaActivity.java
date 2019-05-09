@@ -21,7 +21,7 @@ public class JavaActivity extends AppCompatActivity implements View.OnClickListe
         frameAnimation = new FrameAnimation(textureView);
         frameAnimation.setScaleType(FrameAnimation.ScaleType.FIT_CENTER);
         frameAnimation.setRepeatMode(FrameAnimation.RepeatMode.REVERSE_INFINITE);
-        frameAnimation.playAnimationFromAssets("zone");
+        frameAnimation.playAnimationFromAssets("zone720p");
     }
 
     @Override

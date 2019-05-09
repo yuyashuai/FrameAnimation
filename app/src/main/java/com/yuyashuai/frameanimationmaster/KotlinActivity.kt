@@ -9,7 +9,7 @@ import kotlinx.android.synthetic.main.activity_kotlin.*
 
 class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, FrameAnimation.FrameAnimationListener {
 
-    private val resources = listOf("zone")
+    private val resources = listOf("zone720p","traffic720p")
     private val scaleTypes = listOf("CENTER",
             "CENTER_INSIDE",
             "CENTER_CROP",
