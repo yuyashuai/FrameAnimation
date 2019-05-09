@@ -32,9 +32,9 @@ frameAnimation.playAnimationFromAssets("bird/crow");
 ```
 #### 更多设置
 ```                
-frameAnimation.setScaleType()//设置缩放类型，即时生效
+frameAnimation.setScaleType()//设置缩放类型，播放中立即生效
 frameAnimation.setRepeatMode()//设置循环播放模式，下次播放生效
-frameAnimation.setFrameInterval()//设置帧间隔，默认42ms,如果设置过小，会以能达到的最快速度播放，及时生效
+frameAnimation.setFrameInterval()//设置帧间隔，默认42ms,如果设置过小，会以能达到的最快速度播放，播放中立即生效
 ```
 > 自定义播放顺序，循环模式，参考[RepeatMode](https://github.com/yuyashuai/FrameAnimation/tree/master/frameanimation/src/main/java/com/yuyashuai/frameanimation/repeatmode),实现自定义播放策略
 #### 已知问题&注意事项

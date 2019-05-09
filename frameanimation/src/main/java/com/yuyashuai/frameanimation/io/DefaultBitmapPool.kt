@@ -69,15 +69,8 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
             relay(strategy)
             return
         }
-        val decoderList = ArrayList<DefaultBitmapDecoder>()
-        repeat(5) {
-            decoderList.add(DefaultBitmapDecoder(mContext))
-        }
-        if (mDecoderPool.size < 5) {
-            mDecoderPool.offer(DefaultBitmapDecoder(mContext))
-            mDecoderPool.offer(DefaultBitmapDecoder(mContext))
-            mDecoderPool.offer(DefaultBitmapDecoder(mContext))
-            mDecoderPool.offer(DefaultBitmapDecoder(mContext))
+
+        repeat((0 until mDecoderPool.size).count()) {
             mDecoderPool.offer(DefaultBitmapDecoder(mContext))
         }
         isWorking = true

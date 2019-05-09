@@ -7,9 +7,9 @@ import android.widget.*
 import com.yuyashuai.frameanimation.FrameAnimation
 import kotlinx.android.synthetic.main.activity_kotlin.*
 
-class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, FrameAnimation.FrameAnimationListener {
+class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, FrameAnimation.FrameAnimationListener, SeekBar.OnSeekBarChangeListener {
 
-    private val resources = listOf("zone720p","traffic720p")
+    private val resources = listOf("zone720p", "traffic720p")
     private val scaleTypes = listOf("CENTER",
             "CENTER_INSIDE",
             "CENTER_CROP",
@@ -32,23 +32,9 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         acs_resource.onItemSelectedListener = this
         acs_repeat_mode.onItemSelectedListener = this
         acs_scale_type.onItemSelectedListener = this
+        acs_resource.onItemSelectedListener = this
         sb_frame_interval.max = 300
-        sb_frame_interval.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                tv_frame_interval.text = if (progress == 0) {
-                    "frame interval: max"
-                } else {
-                    "frame interval: ${progress}ms"
-                }
-                animation.frameInterval = progress
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-            }
-        })
+        sb_frame_interval.setOnSeekBarChangeListener(this)
         sb_frame_interval.progress = animation.frameInterval
         animation.animationListener = this
         btn_start.setOnClickListener {
@@ -97,8 +83,27 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                 }
                 animation.setRepeatMode(repeatMode)
             }
+            R.id.acs_resource -> {
+
+            }
         }
     }
+
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        tv_frame_interval.text = if (progress == 0) {
+            "frame interval: max"
+        } else {
+            "frame interval: ${progress}ms"
+        }
+        animation.frameInterval = progress
+    }
+
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+    }
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+    }
+
 
     override fun onPause() {
         super.onPause()
