@@ -1,14 +1,15 @@
-## SilkyAnimation 
-用SurfaceView来播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。支持任意多帧的动画。
+## FrameAnimation 
+用TextureView或SurfaceView 高性能播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。
+
 ### 下载 Download
 #### jar
 [download jar](http://jcenter.bintray.com/com/yuyashuai/android/silkyanimation/1.1.6/silkyanimation-1.1.6-sources.jar)
 ### 使用 Usage
 
 ```
-SilkyAnimation mAnimation=
-                new SilkyAnimation.Builder(mSurfaceView)
-                .build();
+        TextureView textureView = findViewById(R.id.texture_view);
+        frameAnimation = new FrameAnimation(textureView);
+        frameAnimation.playAnimationFromAssets("zone");
 ```
 ##### 从文件目录中读取资源 get resources from a directory
 ```
@@ -32,24 +33,10 @@ mAnimation.start(assetsPath);
 ```
 #### 更多设置 more setting
 ```                
-new SilkyAnimation.Builder(mSurfaceView)
-                //设置常驻内存的缓存数量, 默认5. 
-                .setCacheCount(8)
-                //设置帧间隔, 默认100
-                .setFrameInterval(80)
-                //设置缩放类型, 默认fit center，与ImageView的缩放模式通用
-                .setScaleType(SilkyAnimation.SCALE_TYPE_FIT_END)
-                //设置动画开始结束状态监听
-                .setAnimationListener(listener)
-                //设置是否支持bitmap复用，默认为true
-                .setSupportInBitmap(false)
-                //设置循环模式, 默认不循环
-                .setRepeatMode(SilkyAnimation.MODE_INFINITE)
-                .build();
+
 ```
 #### issue
-有任何问题，请直接[添加issues](https://github.com/yuyashuai/SilkyAnimation/issues/new)。  
-If there is any problems, [add issues](https://github.com/yuyashuai/SilkyAnimation/issues/new) directly.  
+有问题[加issues](https://github.com/yuyashuai/SilkyAnimation/issues/new)。  
 
 
 
