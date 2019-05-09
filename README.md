@@ -39,7 +39,7 @@ frameAnimation.setFrameInterval()//设置帧间隔，默认42ms,如果设置过�
 > 自定义播放顺序，循环模式，参考[RepeatMode](https://github.com/yuyashuai/FrameAnimation/tree/master/frameanimation/src/main/java/com/yuyashuai/frameanimation/repeatmode),实现自定义播放策略
 #### 已知问题&注意事项
 
-* 由于 Bitmap reuse 问题，如果上个动画正在播放，有直接调用了`playAnimation`方法，务必保证两组动画的分辨率相同，或第二组动画图片占用内存的大小小于上组动画。否则请先调用 `stopAnimation()`停止后再播放。
+* 由于 Bitmap reuse 问题，如果上个动画正在播放，又直接调用了`playAnimation`方法，务必保证两组动画的分辨率相同，或第二组动画图片占用内存的大小小于上组动画。否则请先调用 `stopAnimation()`停止后再播放。
 * 如果帧动画的分辨率不一致，请设置`setSupportInBitmap(false)`关闭 bitmap 的复用，但是关闭复用后会造成频繁GC，因此最好使所有帧分辨率保持一致
 * 请根据 View 的生命周期，及时停止动画的播放。比如 activity在 `onPause()`或者`onDestory()`中调用`stopAnimation()`, 接下来将会把动画封装在View 中。
 * 关于动画的监听，现在只提供了动画的开始和结束监听，后续会补上progress 和 repeat 的监听。此外你也可以通过自定义[RepeatStrategy](https://github.com/yuyashuai/FrameAnimation/blob/master/frameanimation/src/main/java/com/yuyashuai/frameanimation/repeatmode/RepeatStrategy.kt) 将监听事件插入其中。
