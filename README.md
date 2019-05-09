@@ -1,7 +1,7 @@
 ## FrameAnimation 
 用TextureView或SurfaceView 高性能播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。
 
-***华为 mate 20x  图片1920*1080 24bit color JPG 201帧 24fps 测试效果***
+***华为 mate 20x 1920×1080 24bit color JPG 201frames 24fps 测试效果***
 
 ![example](https://github.com/yuyashuai/PictureBed/blob/master/SVID_20190509_163330_1.gif?raw=true)
 
@@ -41,7 +41,7 @@ frameAnimation.setFrameInterval()//设置帧间隔，默认42ms,如果设置过�
 * 请根据 View 的生命周期，及时停止动画的播放。比如 activity在 `onPause()`或者`onDestory()`中调用`stopAnimation()`, 接下来将会把动画封装在View 中。
 * 关于动画的监听，现在只提供了动画的开始和结束监听，后续会补上progress 和 repeat 的监听。此外你也可以通过自定义[RepeatStrategy](https://github.com/yuyashuai/FrameAnimation/blob/master/frameanimation/src/main/java/com/yuyashuai/frameanimation/repeatmode/RepeatStrategy.kt) 将监听事件插入其中。
 #### TextureView 还是 SurfaceView
- [TextureView](https://developer.android.com/reference/android/view/TextureView)。TextureView 必须运行在支持硬件加速的上，与[SurfaceView](https://developer.android.com/reference/android/view/SurfaceView) 不同，不会单独创建 window，因此可以和常规 View 进行变换等操作，更多请参考官方[Wiki](https://developer.android.com/reference/android/view/TextureView). 
+[TextureView](https://developer.android.com/reference/android/view/TextureView)必须运行在支持硬件加速的上，与[SurfaceView](https://developer.android.com/reference/android/view/SurfaceView) 不同，不会单独创建 window，因此可以和常规 View 进行变换等操作，更多请参考官方[Wiki](https://developer.android.com/reference/android/view/TextureView). 
 #### todolist
 1. AnimationView
 2. 完善动画监听
