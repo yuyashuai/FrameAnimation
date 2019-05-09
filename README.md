@@ -1,7 +1,7 @@
 ## FrameAnimation 
 用TextureView或SurfaceView 高性能播放帧动画，避免在很多帧的情况下使用AnimationDrawable带来的OOM和卡顿问题。
 
-***华为 mate 20x 1920×1080 24bit color JPG 201frames 24fps 测试效果***
+***华为 mate 20X 1920×1080 24bit color JPG 201frames 24fps 测试效果***
 
 ![example](https://github.com/yuyashuai/PictureBed/blob/master/SVID_20190509_163330_1.gif?raw=true)
 
@@ -17,6 +17,7 @@ frameAnimation.playAnimationFromAssets("zone");
 ```
 ##### 从文件目录中读取资源
 ```
+//存放帧动画图片文件夹的路径
 frameAnimation.playAnimationFromFile(filePath);
 ```
 ##### 从assets目录中读取资源
@@ -29,12 +30,13 @@ frameAnimation.playAnimationFromAssets("bird");
 //assets 下二级目录 assets/bird/crow
 frameAnimation.playAnimationFromAssets("bird/crow");
 ```
-#### 更多设置 more setting
+#### 更多设置
 ```                
 frameAnimation.setScaleType()//设置缩放类型，即时生效
 frameAnimation.setRepeatMode()//设置循环播放模式，下次播放生效
 frameAnimation.setFrameInterval()//设置帧间隔，默认42ms,如果设置过小，会以能达到的最快速度播放，及时生效
 ```
+> 自定义播放顺序，循环模式，参考[RepeatMode](https://github.com/yuyashuai/FrameAnimation/tree/master/frameanimation/src/main/java/com/yuyashuai/frameanimation/repeatmode),实现自定义播放策略
 #### 已知问题&注意事项
 
 * 由于 Bitmap reuse 问题，如果上个动画正在播放，有直接调用了`playAnimation`方法，务必保证两组动画的分辨率相同，或第二组动画图片占用内存的大小小于上组动画。否则请先调用 `stopAnimation()`停止后再播放。
@@ -49,5 +51,5 @@ frameAnimation.setFrameInterval()//设置帧间隔，默认42ms,如果设置过�
 3. 抽离更多配置选项
 #### issue
 
-有问题[加issues](https://github.com/yuyashuai/SilkyAnimation/issues/new)。  
+有问题[加issue](https://github.com/yuyashuai/SilkyAnimation/issues/new)。  
 
