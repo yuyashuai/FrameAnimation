@@ -9,18 +9,22 @@ import kotlinx.android.synthetic.main.activity_kotlin.*
 
 class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, FrameAnimation.FrameAnimationListener, SeekBar.OnSeekBarChangeListener {
 
-    private val resources = listOf("zone720p", "traffic720p")
-    private val scaleTypes = listOf("CENTER",
-            "CENTER_INSIDE",
-            "CENTER_CROP",
-            "FIT_END",
-            "FIT_CENTER",
-            "FIT_START",
-            "FIT_XY")
-    private val repeatModes = listOf("REVERSE_ONCE",
-            "REVERSE_INFINITE",
-            "INFINITE",
-            "ONCE")
+    private val resources =
+            listOf("zone720p",
+                    "traffic720p")
+    private val scaleTypes =
+            listOf("CENTER",
+                    "CENTER_INSIDE",
+                    "CENTER_CROP",
+                    "FIT_END",
+                    "FIT_CENTER",
+                    "FIT_START",
+                    "FIT_XY")
+    private val repeatModes =
+            listOf("REVERSE_ONCE",
+                    "REVERSE_INFINITE",
+                    "INFINITE",
+                    "ONCE")
     private lateinit var animation: FrameAnimation
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -70,7 +70,7 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
             return
         }
 
-        repeat((0 until mDecoderPool.size).count()) {
+        repeat((0 until 5-mDecoderPool.size).count()) {
             mDecoderPool.offer(DefaultBitmapDecoder(mContext))
         }
         isWorking = true

@@ -17,24 +17,24 @@ object Util {
      * @param assetsPath assets resource path, must be a directory
      * @return if assets does not exist return a empty list
      */
-    fun getPathList(context: Context, assetsPath: String): MutableList<String> {
+    fun getPathList(context: Context, assetsPath: String): List<String> {
         val assetManager = context.assets
         try {
             val assetFiles = assetManager.list(assetsPath)
             if (assetFiles.isNullOrEmpty()) {
                 Log.e(TAG, "no file in this asset directory")
-                return ArrayList(0)
+                return emptyList()
             }
             //转换真实路径
             for (i in assetFiles.indices) {
                 assetFiles[i] = assetsPath + File.separator + assetFiles[i]
             }
-            return assetFiles.toMutableList()
+            return assetFiles.toList()
         } catch (e: IOException) {
             Log.e(TAG, e.message)
             e.printStackTrace()
         }
-        return ArrayList(0)
+        return emptyList()
     }
 
     /**
@@ -47,7 +47,7 @@ object Util {
         val list = ArrayList<String>()
         if (file != null) {
             if (file.exists() && file.isDirectory) {
-                val files = file.listFiles() ?: return emptyList()
+                val files = file.listFiles() ?: return list
                 list.addAll(files.map { it.absolutePath })
             } else if (!file.exists()) {
                 Log.e(TAG, "file doesn't exists")
