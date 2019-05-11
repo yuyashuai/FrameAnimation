@@ -5,7 +5,25 @@
 
 ![example](https://github.com/yuyashuai/PictureBed/blob/master/SVID_20190509_163330_1.gif?raw=true)
 
-### 下载
+### 引入
+#### Gradle
+1. project gradle 中添加
+```
+...
+    repositories {
+        ...
+        ...
+        maven {
+            url  "https://dl.bintray.com/yuyashuai/FrameAnimation"
+        }
+    }
+...
+```
+2. module gradle中添加
+```
+ implementation 'com.yuyashuai.frameanimation:frameanimation:2.0.0'
+```
+#### 直接下载
 [download aar](https://dl.bintray.com/yuyashuai/android/com/yuyashuai/android/frameanimation/2.0.0/:frameanimation-2.0.0.aar)
 
 ### 使用 
