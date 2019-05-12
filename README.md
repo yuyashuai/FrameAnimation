@@ -7,19 +7,6 @@
 
 ### 引入
 #### Gradle
-1. project gradle 中添加
-```
-...
-    repositories {
-        ...
-        ...
-        maven {
-            url  "https://dl.bintray.com/yuyashuai/FrameAnimation"
-        }
-    }
-...
-```
-2. module gradle中添加
 ```
  implementation 'com.yuyashuai.frameanimation:frameanimation:2.0.0'
 ```
