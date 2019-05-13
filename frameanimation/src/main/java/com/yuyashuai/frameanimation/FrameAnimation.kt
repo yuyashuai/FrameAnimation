@@ -75,6 +75,10 @@ class FrameAnimation private constructor(
         return@Callback true
     })
 
+    /**
+     * play animation from assets files
+     * @param assetsPath must be a directory
+     */
     fun playAnimationFromAssets(assetsPath: String) {
         val paths = Util.getPathList(mContext, assetsPath)
         playAnimation(paths.map {
@@ -93,6 +97,10 @@ class FrameAnimation private constructor(
         } as MutableList<PathData>)
     }
 
+    /**
+     * start playing animations
+     * @param paths the
+     */
     fun playAnimation(paths: MutableList<PathData>) {
         if (paths.isNullOrEmpty()) {
             Log.e(TAG, "path is null or empty")
