@@ -21,4 +21,8 @@ class RepeatReverse : RepeatStrategy {
             reversePaths[frameIndex]
         }
     }
+
+    override fun getTotalFrames(): Int {
+        return reversePaths.size
+    }
 }

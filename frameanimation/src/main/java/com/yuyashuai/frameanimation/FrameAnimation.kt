@@ -21,53 +21,52 @@ import kotlin.concurrent.thread
 /**
  * @author yuyashuai   2019-04-25.
  */
-class FrameAnimation private constructor(
-        private val mTextureView: TextureView?,
-        private val mSurfaceView: SurfaceView?,
-        isTextureViewMode: Boolean,
-        private val mContext: Context) {
+open class FrameAnimation private constructor(
+        private var mTextureView: TextureView?,
+        private var mSurfaceView: SurfaceView?,
+        private var isTextureViewMode: Boolean?,
+        private val mContext: Context) : AnimationController {
     constructor(surfaceView: SurfaceView) : this(null, surfaceView, false, surfaceView.context)
     constructor(textureView: TextureView) : this(textureView, null, true, textureView.context)
+    constructor(context: Context) : this(null, null, null, context)
+
+    private lateinit var mBitmapDrawer: BitmapDrawer
 
     private val TAG = javaClass.simpleName
+
     private val mBitmapPool = DefaultBitmapPool(mContext)
-    var isPlaying = false
-        private set
-
-    var frameInterval = 42
-        set(interval) {
-            field = if (interval <= 0) {
-                0
-            } else {
-                interval
-            }
-        }
 
     /**
-     * support the reuse of bitmap
-     * Turn off this option if the picture resolution is inconsistent
+     * Indicates whether the animation is playing
      */
-    var supportInBitmap = true
+    private var isPlaying = false
 
     /**
-     * Whether to clear the view when the animation finishes playing
-     * if false the view will display the last frame
+     * Milliseconds interval between two frames
+     * 42ms≈24fps
      */
-    var clearViewAfterStop = true
+    private var frameInterval = 42
 
+    /**
+     * The thread responsible for drawing
+     */
     private var drawThread: Thread? = null
 
+    /**
+     *
+     */
     private var relayDraw = false
 
     private var mRepeatStrategy: RepeatStrategy = RepeatOnce()
 
-    private val mBitmapDrawer: BitmapDrawer = if (isTextureViewMode) {
-        TextureBitmapDrawer(mTextureView!!)
-    } else {
-        SurfaceViewBitmapDrawer(mSurfaceView!!)
-    }
+    /**
+     * Whether to clear the view when the animation finished
+     * if false the view will display the last frame
+     */
+    private var clearViewAfterStop = true
 
     private val MSG_STOP = 0X01
+
     private val mHandler = Handler(Handler.Callback { msg ->
         if (msg.what == MSG_STOP) {
             stopAnimation()
@@ -76,38 +75,134 @@ class FrameAnimation private constructor(
     })
 
     /**
+     * support the reuse of bitmap
+     * Turn off this option if the picture resolution is inconsistent
+     */
+    private var supportInBitmap = true
+
+    /**
+     * the animation drawing frame index
+     */
+    private var drawIndex = 0
+
+    init {
+        if (isTextureViewMode == true) {
+            mBitmapDrawer = TextureBitmapDrawer(mTextureView!!)
+        } else if (isTextureViewMode == false) {
+            mBitmapDrawer = SurfaceViewBitmapDrawer(mSurfaceView!!)
+        }
+    }
+
+    override fun isPlaying(): Boolean {
+        return isPlaying
+    }
+
+    override fun getFrameInterval(): Int {
+        return frameInterval
+    }
+
+    override fun setFrameInterval(frameInterval: Int) {
+        this.frameInterval = if (frameInterval <= 0) {
+            0
+        } else {
+            frameInterval
+        }
+    }
+
+    /**
+     *only use for delegation
+     */
+    fun bindView(textureView: TextureView) {
+        isTextureViewMode = true
+        mTextureView = textureView
+        mBitmapDrawer = TextureBitmapDrawer(textureView)
+    }
+
+    /**
+     *only use for delegation
+     */
+    fun bindView(surfaceView: SurfaceView) {
+        isTextureViewMode = false
+        mSurfaceView = surfaceView
+        mBitmapDrawer = SurfaceViewBitmapDrawer(surfaceView)
+    }
+
+
+    override fun supportInBitmap(): Boolean {
+        return supportInBitmap
+    }
+
+    override fun setSupportInBitmap(supportInBitmap: Boolean) {
+        this.supportInBitmap = supportInBitmap
+    }
+
+    override fun clearViewAfterStop(clearViewAfterStop: Boolean) {
+        this.clearViewAfterStop = clearViewAfterStop
+    }
+
+    override fun clearViewAfterStop(): Boolean {
+        return clearViewAfterStop
+    }
+
+    /**
      * play animation from assets files
      * @param assetsPath must be a directory
      */
-    fun playAnimationFromAssets(assetsPath: String) {
-        val paths = Util.getPathList(mContext, assetsPath)
-        playAnimation(paths.map {
-            PathData(it, PATH_ASSETS)
-        } as MutableList<PathData>)
+    override fun playAnimationFromAssets(assetsPath: String) {
+        playAnimationFromAssets(assetsPath, 0)
     }
 
     /**
      * play animation from a file directory path
      * @param filePath must be a directory
      */
-    fun playAnimationFromFile(filePath: String) {
-        val paths = Util.getPathList(File(filePath))
-        playAnimation(paths.map {
-            PathData(it, PATH_FILE)
-        } as MutableList<PathData>)
+    override fun playAnimationFromFile(filePath: String) {
+        playAnimationFromFile(filePath, 0)
     }
 
     /**
-     * start playing animations
-     * @param paths the
+     * play animation from assets files
+     * @param assetsPath must be a directory
+     * @param index the start frame index
      */
-    fun playAnimation(paths: MutableList<PathData>) {
+    override fun playAnimationFromAssets(assetsPath: String, index: Int) {
+        val paths = Util.getPathList(mContext, assetsPath)
+        playAnimation(paths.map {
+            PathData(it, PATH_ASSETS)
+        } as MutableList<PathData>, index)
+    }
+
+    /**
+     * play animation from a file directory path
+     * @param filePath must be a directory
+     * @param index the start frame index
+     */
+    override fun playAnimationFromFile(filePath: String, index: Int) {
+        val paths = Util.getPathList(File(filePath))
+        playAnimation(paths.map {
+            PathData(it, PATH_FILE)
+        } as MutableList<PathData>, index)
+    }
+
+    var mPaths: MutableList<PathData>? = null
+        private set
+
+    /**
+     * start playing animations
+     * @param paths the path data
+     */
+    override fun playAnimation(paths: MutableList<PathData>, index: Int) {
         if (paths.isNullOrEmpty()) {
             Log.e(TAG, "path is null or empty")
             return
         }
+        if (mSurfaceView == null && mTextureView == null) {
+            throw NullPointerException("TextureView and SurfaceView is null")
+        }
+        mPaths = paths
+        drawIndex = index
         mRepeatStrategy.setPaths(paths)
-        mBitmapPool.start(mRepeatStrategy)
+        mBitmapPool.start(mRepeatStrategy, index)
         if (isPlaying) {
             return
         }
@@ -119,9 +214,12 @@ class FrameAnimation private constructor(
         }
     }
 
-    fun stopAnimation() {
+    /**
+     * stop the animation async
+     */
+    override fun stopAnimation(): Int {
         if (!isPlaying) {
-            return
+            return 0
         }
         mBitmapPool.release()
         try {
@@ -129,22 +227,27 @@ class FrameAnimation private constructor(
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
+        mPaths = null
         isPlaying = false
-        animationListener?.onAnimationFinish()
+        animationListener?.onAnimationEnd()
         if (clearViewAfterStop) {
             mBitmapDrawer.clear()
         }
+        return drawIndex
     }
 
     private fun draw() {
         animationListener?.onAnimationStart()
         drawThread = thread(start = true) {
             while (isPlaying) {
-                if (mBitmapPool.isReleased()) {
-                    mHandler.sendEmptyMessage(MSG_STOP)
-                }
                 val startTime = SystemClock.uptimeMillis()
-                val bitmap = mBitmapPool.take() ?: continue
+                val bitmap = mBitmapPool.take()
+                if (bitmap == null) {
+                    //the animation has finished playing, set the index 0
+                    drawIndex = 0
+                    mHandler.sendEmptyMessage(MSG_STOP)
+                    continue
+                }
                 configureDrawMatrix(bitmap, mSurfaceView ?: mTextureView!!)
                 val canvas = mBitmapDrawer.draw(bitmap, mDrawMatrix) ?: continue
                 val interval = SystemClock.uptimeMillis() - startTime
@@ -155,7 +258,13 @@ class FrameAnimation private constructor(
                         e.printStackTrace()
                     }
                 }
+                drawIndex++
                 mBitmapDrawer.unlockAndPost(canvas)
+                if (mRepeatStrategy.getTotalFrames() == FRAMES_INFINITE) {
+                    animationListener?.onProgress(0f, drawIndex, mRepeatStrategy.getTotalFrames())
+                } else {
+                    animationListener?.onProgress(drawIndex.toFloat() / mRepeatStrategy.getTotalFrames().toFloat(), drawIndex, mRepeatStrategy.getTotalFrames())
+                }
                 if (supportInBitmap) {
                     mBitmapPool.recycle(bitmap)
                 }
@@ -170,17 +279,11 @@ class FrameAnimation private constructor(
         }
     }
 
-    private val MATRIX_SCALE_ARRAY =
-            arrayOf(Matrix.ScaleToFit.FILL, Matrix.ScaleToFit.START, Matrix.ScaleToFit.CENTER, Matrix.ScaleToFit.END)
-
     /**
      * set the bitmap scale type
      * @see ScaleType
      */
-    fun setScaleType(scaleType: ScaleType) {
-        if (scaleType == null) {
-            throw NullPointerException("setScaleType, scaleType can not be null")
-        }
+    override fun setScaleType(scaleType: ScaleType) {
         mScaleType = scaleType
     }
 
@@ -188,10 +291,7 @@ class FrameAnimation private constructor(
      * set the bitmap transform matrix
      * @see setScaleType
      */
-    fun setScaleType(matrix: Matrix) {
-        if (matrix == null) {
-            throw NullPointerException("matrix can not be null")
-        }
+    override fun setScaleType(matrix: Matrix) {
         mScaleType = ScaleType.MATRIX
         mDrawMatrix = matrix
     }
@@ -201,10 +301,7 @@ class FrameAnimation private constructor(
      * Works before the animation plays, if called when animation playing, it won't take effect until the next playing.
      * @see RepeatMode
      */
-    fun setRepeatMode(repeatMode: RepeatMode) {
-        if (repeatMode == null) {
-            throw NullPointerException("repeatMode can not be null")
-        }
+    override fun setRepeatMode(repeatMode: RepeatMode) {
         mRepeatStrategy = when (repeatMode) {
             RepeatMode.INFINITE -> RepeatInfinite()
             RepeatMode.REVERSE_ONCE -> RepeatReverse()
@@ -216,12 +313,12 @@ class FrameAnimation private constructor(
     /**
      * @see setRepeatMode
      */
-    fun setRepeatMode(repeatMode: RepeatStrategy) {
-        if (repeatMode == null) {
-            throw NullPointerException("repeatMode can not be null")
-        }
+    override fun setRepeatMode(repeatMode: RepeatStrategy) {
         mRepeatStrategy = repeatMode
     }
+
+    private val MATRIX_SCALE_ARRAY =
+            arrayOf(Matrix.ScaleToFit.FILL, Matrix.ScaleToFit.START, Matrix.ScaleToFit.CENTER, Matrix.ScaleToFit.END)
 
     private var mScaleType = ScaleType.CENTER
 
@@ -296,11 +393,29 @@ class FrameAnimation private constructor(
     }
 
     interface FrameAnimationListener {
+        /**
+         * notifies the start of the animation.
+         */
         fun onAnimationStart()
-        fun onAnimationFinish()
+
+        /**
+         *  notifies the end of the animation.
+         */
+        fun onAnimationEnd()
+
+        /**
+         * @param progress 0-1, if the animation played infinitely, always 0
+         * @param frameIndex the current frame index
+         * @param totalFrames the total frames of the animation, -1 if the animation played infinitely
+         */
+        fun onProgress(progress: Float, frameIndex: Int, totalFrames: Int)
     }
 
-    var animationListener: FrameAnimationListener? = null
+    private var animationListener: FrameAnimationListener? = null
+
+    override fun setAnimationListener(listener: FrameAnimationListener) {
+        animationListener = listener
+    }
 
     enum class ScaleType(val value: Int) {
 
@@ -374,6 +489,7 @@ class FrameAnimation private constructor(
     companion object {
         val PATH_FILE = 0x00
         val PATH_ASSETS = 0x01
+        val FRAMES_INFINITE = -0x01
     }
 
     /**

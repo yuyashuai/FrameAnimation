@@ -11,7 +11,6 @@ import com.yuyashuai.frameanimation.FrameAnimation
  *  @see RepeatOnce
  */
 interface RepeatStrategy {
-
     /**
      * normally, this method will be called automatically
      * so just get the paths data then return it in the getNextFrameResource() method
@@ -24,4 +23,11 @@ interface RepeatStrategy {
      * @return the path data for the specific frame, if want to stop the animation just return null
      */
     fun getNextFrameResource(frameIndex: Int): FrameAnimation.PathData?
+
+    /**
+     * get the total frames of the animation
+     * use for progress listener
+     * @see FrameAnimation.animationListener
+     */
+    fun getTotalFrames():Int
 }

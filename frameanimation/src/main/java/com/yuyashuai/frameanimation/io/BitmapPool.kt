@@ -18,7 +18,7 @@ interface BitmapPool {
      * Start running,
      * @param repeatStrategy bitmap order
      */
-    fun start(repeatStrategy: RepeatStrategy)
+    fun start(repeatStrategy: RepeatStrategy,index:Int)
 
     /**
      * recycler the bitmap for reuse

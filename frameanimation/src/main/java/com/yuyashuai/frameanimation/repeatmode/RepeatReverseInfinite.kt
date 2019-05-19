@@ -15,7 +15,6 @@ class RepeatReverseInfinite : RepeatStrategy {
         paths = list.toMutableList()
         reversePaths.removeAt(reversePaths.size - 1)
         paths.removeAt(paths.size - 1)
-
     }
 
     override fun getNextFrameResource(frameIndex: Int): FrameAnimation.PathData? {
@@ -28,5 +27,9 @@ class RepeatReverseInfinite : RepeatStrategy {
             return reversePaths[frameIndex % reversePaths.size]
         }
         return null
+    }
+
+    override fun getTotalFrames(): Int {
+        return FrameAnimation.FRAMES_INFINITE
     }
 }

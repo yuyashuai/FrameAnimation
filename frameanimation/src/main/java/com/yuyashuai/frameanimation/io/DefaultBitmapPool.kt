@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * @author yuyashuai   2019-04-24.
  */
-class DefaultBitmapPool(context: Context) : BitmapPool {
+open class DefaultBitmapPool(context: Context) : BitmapPool {
     private val mContext = context
     /**
      * the pool store bitmap that has not yet been used
@@ -50,6 +50,9 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
 
     private var decodeThread: Thread? = null
 
+    /**
+     * If the pool is stopping, wait until it stops completely before working
+     */
     private var waitToStart = false
 
     private var tempStrategy: RepeatStrategy? = null
@@ -58,23 +61,26 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
 
     private val tempMap = ConcurrentHashMap<Int, Bitmap?>()
 
-    override fun start(strategy: RepeatStrategy) {
+    @Volatile
+    private var releaseWhenEmpty = false
+
+    override fun start(repeatStrategy: RepeatStrategy, index: Int) {
         //if the pool is Stopping, wait until it stops
         if (isStopping) {
-            waitToStart(strategy)
+            waitToStart(repeatStrategy)
             return
         }
         //if the pool is running normally, relay to play
         if (isWorking) {
-            relay(strategy)
+            relay(repeatStrategy)
             return
         }
-
-        repeat((0 until 5-mDecoderPool.size).count()) {
+        mIndex.set(index)
+        repeat((0 until 5 - mDecoderPool.size).count()) {
             mDecoderPool.offer(DefaultBitmapDecoder(mContext))
         }
         isWorking = true
-        mRepeatStrategy = strategy
+        mRepeatStrategy = repeatStrategy
         mDecodeExecutors = Executors.newFixedThreadPool(6)
         decodeThread = Thread {
             decodeBitmap()
@@ -103,7 +109,6 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
     private fun decodeBitmap() {
         if (!isWorking || isStopping) {
             clearAndStop()
-            System.out.println("decodeBitmap------------clearAndStop")
             return
         }
         if (restartNextDecode) {
@@ -123,7 +128,9 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
                     if (!Thread.currentThread().isInterrupted) {
                         val path = mRepeatStrategy?.getNextFrameResource(index)
                         if (path == null) {
-                            release()
+                            releaseWhenEmpty()
+                            mDecoderPool.offer(decoder)
+                            mCountDownLatch.countDown()
                             return@execute
                         }
                         val bitmap =
@@ -148,6 +155,10 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
         decodeBitmap()
     }
 
+    /**
+     * clear the resource
+     * call this method When all the threads stop
+     */
     private fun clearAndStop() {
         mPool.clear()
         mInBitmapPool.clear()
@@ -158,7 +169,7 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
         mDecoderPool.clear()
         if (waitToStart && tempStrategy != null) {
             waitToStart = false
-            start(tempStrategy!!)
+            start(tempStrategy!!, 0)
         }
     }
 
@@ -167,6 +178,7 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
             map.clear()
             return
         }
+        //sort by index
         map.keys().toList().sorted().forEach {
             try {
                 if (isWorking && !isStopping) {
@@ -180,6 +192,12 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
     }
 
     override fun take(): Bitmap? {
+        if (releaseWhenEmpty) {
+            if (mPool.isEmpty()) {
+                release()
+                return null
+            }
+        }
         return try {
             if (isWorking && !isStopping) {
                 mPool.take()
@@ -203,10 +221,15 @@ class DefaultBitmapPool(context: Context) : BitmapPool {
         return isStopping || !isWorking
     }
 
+    private fun releaseWhenEmpty() {
+        releaseWhenEmpty = true
+    }
+
     override fun release() {
         if (isStopping || !isWorking) {
             return
         }
+        releaseWhenEmpty = false
         isStopping = true
         decodeThread?.interrupt()
         mDecodeExecutors?.shutdownNow()

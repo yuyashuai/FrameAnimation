@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     tools:context="com.yuyashuai.frameanimationmaster.KotlinActivity">
 
-    <TextureView
-        android:id="@+id/texture_view"
+    <com.yuyashuai.frameanimation.FrameAnimationView
+        android:id="@+id/animation_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="10dp"
@@ -83,4 +83,5 @@
         app:layout_constraintEnd_toEndOf="@+id/btn_start"
         app:layout_constraintStart_toStartOf="@+id/btn_start"
         app:layout_constraintTop_toBottomOf="@+id/btn_start" />
+
 </android.support.constraint.ConstraintLayout>

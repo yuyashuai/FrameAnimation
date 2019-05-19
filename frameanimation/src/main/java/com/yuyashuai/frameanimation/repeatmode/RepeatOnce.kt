@@ -20,4 +20,8 @@ class RepeatOnce : RepeatStrategy {
             paths[frameIndex]
         }
     }
+
+    override fun getTotalFrames(): Int {
+        return paths.size
+    }
 }

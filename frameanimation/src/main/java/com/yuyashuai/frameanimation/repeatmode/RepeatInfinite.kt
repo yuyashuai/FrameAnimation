@@ -20,4 +20,8 @@ class RepeatInfinite : RepeatStrategy {
             paths[frameIndex % paths.size]
         }
     }
+
+    override fun getTotalFrames(): Int {
+        return FrameAnimation.FRAMES_INFINITE
+    }
 }

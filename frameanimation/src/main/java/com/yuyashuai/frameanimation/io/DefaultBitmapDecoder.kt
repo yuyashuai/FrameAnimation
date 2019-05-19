@@ -10,7 +10,7 @@ import java.io.IOException
 /**
  * @author yuyashuai   2019-04-24.
  */
-class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
+open class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
     private val assets = context.assets
     private val TAG = javaClass.simpleName
 

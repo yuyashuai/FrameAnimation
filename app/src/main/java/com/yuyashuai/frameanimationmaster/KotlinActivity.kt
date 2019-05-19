@@ -25,11 +25,9 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                     "REVERSE_INFINITE",
                     "INFINITE",
                     "ONCE")
-    private lateinit var animation: FrameAnimation
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_kotlin)
-        animation = FrameAnimation(texture_view)
         acs_repeat_mode.adapter = ArrayAdapter<String>(this, R.layout.spinner_text_view, repeatModes)
         acs_resource.adapter = ArrayAdapter<String>(this, R.layout.spinner_text_view, resources)
         acs_scale_type.adapter = ArrayAdapter<String>(this, R.layout.spinner_text_view, scaleTypes)
@@ -39,13 +37,14 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         acs_resource.onItemSelectedListener = this
         sb_frame_interval.max = 300
         sb_frame_interval.setOnSeekBarChangeListener(this)
-        sb_frame_interval.progress = animation.frameInterval
-        animation.animationListener = this
+        animation_view.setAnimationListener(this)
+        animation_view.clearViewAfterStop(false)
         btn_start.setOnClickListener {
-            animation.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString())
+            animation_view.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString(),20)
         }
+
         btn_stop.setOnClickListener {
-            animation.stopAnimation()
+            animation_view.stopAnimation()
         }
     }
 
@@ -53,7 +52,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         Toast.makeText(applicationContext, "onAnimationStart", Toast.LENGTH_SHORT).show()
     }
 
-    override fun onAnimationFinish() {
+    override fun onAnimationEnd() {
         Toast.makeText(applicationContext, "onAnimationFinish", Toast.LENGTH_SHORT).show()
     }
 
@@ -76,7 +75,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                     "FIT_START" -> FrameAnimation.ScaleType.FIT_START
                     else -> FrameAnimation.ScaleType.FIT_XY
                 }
-                animation.setScaleType(scaleType)
+                animation_view.setScaleType(scaleType)
             }
             R.id.acs_repeat_mode -> {
                 val repeatMode = when (text) {
@@ -85,12 +84,16 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                     "INFINITE" -> FrameAnimation.RepeatMode.INFINITE
                     else -> FrameAnimation.RepeatMode.ONCE
                 }
-                animation.setRepeatMode(repeatMode)
+                animation_view.setRepeatMode(repeatMode)
             }
             R.id.acs_resource -> {
 
             }
         }
+    }
+
+    override fun onProgress(progress: Float, frameIndex: Int, totalFrames: Int) {
+        //System.out.println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -99,7 +102,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         } else {
             "frame interval: ${progress}ms"
         }
-        animation.frameInterval = progress
+        animation_view.setFrameInterval(progress)
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -108,9 +111,4 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
     }
 
-
-    override fun onPause() {
-        super.onPause()
-        animation.stopAnimation()
-    }
 }
