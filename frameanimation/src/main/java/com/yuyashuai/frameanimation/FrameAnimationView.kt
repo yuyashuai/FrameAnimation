@@ -30,11 +30,17 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
         saveAndStop()
     }
 
+    /**
+     * stop the animation, save the index when the animation stops playing
+     */
     private fun saveAndStop() {
         lastStopPaths = animation.mPaths?.toMutableList()
         lastStopIndex = stopAnimation()
     }
 
+    /**
+     * resume animation
+     */
     private fun restoreAndStart() {
         if (lastStopPaths != null) {
             playAnimation(lastStopPaths!!, lastStopIndex)
@@ -43,7 +49,7 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        restoreAndStart()
+        //restoreAndStart()
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {

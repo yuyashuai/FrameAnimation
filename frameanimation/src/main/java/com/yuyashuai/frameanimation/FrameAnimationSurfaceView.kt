@@ -30,11 +30,17 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
         saveAndStop()
     }
 
+    /**
+     * stop the animation, save the index when the animation stops playing
+     */
     private fun saveAndStop() {
         lastStopPaths = animation.mPaths
         lastStopIndex = stopAnimation()
     }
 
+    /**
+     * resume animation
+     */
     private fun restoreAndStart() {
         if (lastStopPaths != null) {
             playAnimation(lastStopPaths!!, lastStopIndex)

@@ -260,10 +260,13 @@ open class FrameAnimation private constructor(
                 }
                 drawIndex++
                 mBitmapDrawer.unlockAndPost(canvas)
-                if (mRepeatStrategy.getTotalFrames() == FRAMES_INFINITE) {
-                    animationListener?.onProgress(0f, drawIndex, mRepeatStrategy.getTotalFrames())
-                } else {
-                    animationListener?.onProgress(drawIndex.toFloat() / mRepeatStrategy.getTotalFrames().toFloat(), drawIndex, mRepeatStrategy.getTotalFrames())
+                if (mBitmapPool.getRepeatStrategy() != null) {
+                    val strategy=mBitmapPool.getRepeatStrategy()
+                    if (strategy!!.getTotalFrames() == FRAMES_INFINITE) {
+                        animationListener?.onProgress(0f, drawIndex, strategy.getTotalFrames())
+                    } else {
+                        animationListener?.onProgress(drawIndex.toFloat() / strategy.getTotalFrames().toFloat(), drawIndex, strategy.getTotalFrames())
+                    }
                 }
                 if (supportInBitmap) {
                     mBitmapPool.recycle(bitmap)

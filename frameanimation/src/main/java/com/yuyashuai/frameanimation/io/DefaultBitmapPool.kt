@@ -225,6 +225,10 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
         releaseWhenEmpty = true
     }
 
+    override fun getRepeatStrategy(): RepeatStrategy? {
+        return mRepeatStrategy
+    }
+
     override fun release() {
         if (isStopping || !isWorking) {
             return

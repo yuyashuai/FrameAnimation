@@ -1,7 +1,7 @@
 package com.yuyashuai.frameanimationmaster
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.*
 import com.yuyashuai.frameanimation.FrameAnimation
@@ -40,7 +40,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         animation_view.setAnimationListener(this)
         animation_view.clearViewAfterStop(false)
         btn_start.setOnClickListener {
-            animation_view.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString(),20)
+            animation_view.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString())
         }
 
         btn_stop.setOnClickListener {
@@ -53,7 +53,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
     }
 
     override fun onAnimationEnd() {
-        Toast.makeText(applicationContext, "onAnimationFinish", Toast.LENGTH_SHORT).show()
+        Toast.makeText(applicationContext, "onAnimationEnd", Toast.LENGTH_SHORT).show()
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -93,7 +93,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
     }
 
     override fun onProgress(progress: Float, frameIndex: Int, totalFrames: Int) {
-        //System.out.println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
+        System.out.println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

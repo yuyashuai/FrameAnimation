@@ -34,4 +34,7 @@ interface BitmapPool {
      * @return the pool isWorking or released
      */
     fun isReleased():Boolean
+
+
+    fun getRepeatStrategy():RepeatStrategy?
 }
