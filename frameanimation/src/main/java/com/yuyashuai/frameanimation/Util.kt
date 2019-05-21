@@ -12,7 +12,7 @@ import java.util.*
 object Util {
     private val TAG = javaClass.simpleName
     /**
-     * 通过assets资源转换pathList
+     * get the path list from assets
      *
      * @param assetsPath assets resource path, must be a directory
      * @return if assets does not exist return a empty list
@@ -38,7 +38,7 @@ object Util {
     }
 
     /**
-     * 通过File资源转换pathList
+     * get the path list from file
      *
      * @param file the resources directory
      * @return if file does not exist return a empty list

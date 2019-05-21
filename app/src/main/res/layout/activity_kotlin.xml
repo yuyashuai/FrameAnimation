@@ -7,7 +7,7 @@
     tools:context="com.yuyashuai.frameanimationmaster.KotlinActivity">
 
     <com.yuyashuai.frameanimation.FrameAnimationView
-        android:id="@+id/animation_view"
+        android:id="@+id/animationView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="10dp"

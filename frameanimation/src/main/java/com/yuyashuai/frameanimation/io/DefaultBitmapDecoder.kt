@@ -38,7 +38,6 @@ open class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: IllegalArgumentException) {
-            System.out.println("path:$assetPath")
             checkException(e)
         }
         return null
@@ -64,7 +63,6 @@ open class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: IllegalArgumentException) {
-            System.out.println("path:$filePath")
             checkException(e)
         }
         return null

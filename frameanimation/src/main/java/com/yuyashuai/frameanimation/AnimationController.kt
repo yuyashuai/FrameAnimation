@@ -7,6 +7,7 @@ import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
 
 /**
  * @author yuyashuai   2019-05-16.
+ * control animation playing and related configurations
  */
 interface AnimationController {
 

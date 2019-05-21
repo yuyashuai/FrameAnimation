@@ -407,6 +407,7 @@ open class FrameAnimation private constructor(
         fun onAnimationEnd()
 
         /**
+         * callback for animation playing progress
          * @param progress 0-1, if the animation played infinitely, always 0
          * @param frameIndex the current frame index
          * @param totalFrames the total frames of the animation, -1 if the animation played infinitely

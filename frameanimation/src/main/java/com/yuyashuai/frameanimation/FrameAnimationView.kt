@@ -49,7 +49,7 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        //restoreAndStart()
+        restoreAndStart()
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {

@@ -1,9 +1,9 @@
 package com.yuyashuai.frameanimationmaster
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import com.yuyashuai.frameanimation.FrameAnimation
 import kotlinx.android.synthetic.main.activity_kotlin.*
 
@@ -37,14 +37,13 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         acs_resource.onItemSelectedListener = this
         sb_frame_interval.max = 300
         sb_frame_interval.setOnSeekBarChangeListener(this)
-        animation_view.setAnimationListener(this)
-        animation_view.clearViewAfterStop(false)
+        animationView.setAnimationListener(this)
         btn_start.setOnClickListener {
-            animation_view.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString())
+            animationView.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString())
         }
 
         btn_stop.setOnClickListener {
-            animation_view.stopAnimation()
+            animationView.stopAnimation()
         }
     }
 
@@ -75,7 +74,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                     "FIT_START" -> FrameAnimation.ScaleType.FIT_START
                     else -> FrameAnimation.ScaleType.FIT_XY
                 }
-                animation_view.setScaleType(scaleType)
+                animationView.setScaleType(scaleType)
             }
             R.id.acs_repeat_mode -> {
                 val repeatMode = when (text) {
@@ -84,7 +83,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                     "INFINITE" -> FrameAnimation.RepeatMode.INFINITE
                     else -> FrameAnimation.RepeatMode.ONCE
                 }
-                animation_view.setRepeatMode(repeatMode)
+                animationView.setRepeatMode(repeatMode)
             }
             R.id.acs_resource -> {
 
@@ -102,7 +101,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         } else {
             "frame interval: ${progress}ms"
         }
-        animation_view.setFrameInterval(progress)
+        animationView.setFrameInterval(progress)
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
