@@ -18,7 +18,7 @@
 ```
 2. module gradle
 ```groovy
- implementation 'com.yuyashuai.frameanimation:frameanimation:2.0.1'
+ implementation 'com.yuyashuai.frameanimation:frameanimation:2.0.2'
 ```
 
 ### usage
@@ -51,8 +51,7 @@ animationView.setFrameInterval()
 > 自定义播放顺序，循环模式，参考[RepeatMode](https://github.com/yuyashuai/FrameAnimation/tree/master/frameanimation/src/main/java/com/yuyashuai/frameanimation/repeatmode),实现自定义播放策略
 #### known issues
 
-* 由于 Bitmap reuse 问题，如果上个动画正在播放，又直接调用了`playAnimation`方法，务必保证两组动画的分辨率相同，或第二组动画图片占用内存的大小小于上组动画。否则请先调用 `stopAnimation()`停止后再播放。
-* 如果帧动画的分辨率不一致，请设置`setSupportInBitmap(false)`关闭 bitmap 的复用，但是关闭复用后会造成频繁GC，因此最好使所有帧分辨率保持一致
+* 切换动画时请**不要**调用 `stopAnimation()`停止动画，直接播放新动画即可。
 * 不要在 RecyclerView 或者 ListView 中使用
 #### TextureView or SurfaceView
 [TextureView](https://developer.android.com/reference/android/view/TextureView)必须运行在支持硬件加速的上，与[SurfaceView](https://developer.android.com/reference/android/view/SurfaceView) 不同，不会单独创建 window，因此可以和常规 View 进行变换等操作，更多请参考官方[Wiki](https://developer.android.com/reference/android/view/TextureView). 
