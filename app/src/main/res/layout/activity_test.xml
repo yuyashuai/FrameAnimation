@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.yuyashuai.frameanimationmaster.TestActivity">
+
+    <com.yuyashuai.frameanimation.FrameAnimationView
+        android:id="@+id/fav_test"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/btn1_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="btn1" />
+
+    <Button
+        android:id="@+id/btn2_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:text="btn2" />
+    <Button
+        android:id="@+id/btn3_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:text="btn3" />
+</FrameLayout>

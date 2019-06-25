@@ -13,6 +13,7 @@ import android.view.View
 import com.yuyashuai.frameanimation.drawer.BitmapDrawer
 import com.yuyashuai.frameanimation.drawer.SurfaceViewBitmapDrawer
 import com.yuyashuai.frameanimation.drawer.TextureBitmapDrawer
+import com.yuyashuai.frameanimation.io.AnimationInteractionListener
 import com.yuyashuai.frameanimation.io.DefaultBitmapPool
 import com.yuyashuai.frameanimation.repeatmode.*
 import java.io.File
@@ -25,7 +26,7 @@ open class FrameAnimation private constructor(
         private var mTextureView: TextureView?,
         private var mSurfaceView: SurfaceView?,
         private var isTextureViewMode: Boolean?,
-        private val mContext: Context) : AnimationController {
+        private val mContext: Context) : AnimationController, AnimationInteractionListener {
     constructor(surfaceView: SurfaceView) : this(null, surfaceView, false, surfaceView.context)
     constructor(textureView: TextureView) : this(textureView, null, true, textureView.context)
     constructor(context: Context) : this(null, null, null, context)
@@ -34,11 +35,14 @@ open class FrameAnimation private constructor(
 
     private val TAG = javaClass.simpleName
 
-    private val mBitmapPool = DefaultBitmapPool(mContext)
+    private val mBitmapPool = DefaultBitmapPool(mContext).apply {
+        setInteractionListener(this@FrameAnimation)
+    }
 
     /**
      * Indicates whether the animation is playing
      */
+    @Volatile
     private var isPlaying = false
 
     /**
@@ -52,9 +56,6 @@ open class FrameAnimation private constructor(
      */
     private var drawThread: Thread? = null
 
-    /**
-     *
-     */
     private var relayDraw = false
 
     private var mRepeatStrategy: RepeatStrategy = RepeatOnce()
@@ -66,10 +67,13 @@ open class FrameAnimation private constructor(
     private var clearViewAfterStop = true
 
     private val MSG_STOP = 0X01
+    private val MSG_ANIMATION_START = 0X02
 
     private val mHandler = Handler(Handler.Callback { msg ->
         if (msg.what == MSG_STOP) {
             stopAnimation()
+        } else if (msg.what == MSG_ANIMATION_START) {
+            animationListener?.onAnimationStart()
         }
         return@Callback true
     })
@@ -110,7 +114,7 @@ open class FrameAnimation private constructor(
     }
 
     /**
-     *only use for delegation
+     * only use for delegation
      */
     fun bindView(textureView: TextureView) {
         isTextureViewMode = true
@@ -119,14 +123,13 @@ open class FrameAnimation private constructor(
     }
 
     /**
-     *only use for delegation
+     * only use for delegation
      */
     fun bindView(surfaceView: SurfaceView) {
         isTextureViewMode = false
         mSurfaceView = surfaceView
         mBitmapDrawer = SurfaceViewBitmapDrawer(surfaceView)
     }
-
 
     override fun supportInBitmap(): Boolean {
         return supportInBitmap
@@ -221,14 +224,14 @@ open class FrameAnimation private constructor(
         if (!isPlaying) {
             return 0
         }
+        isPlaying = false
         mBitmapPool.release()
         try {
             drawThread?.interrupt()
         } catch (e: InterruptedException) {
-            e.printStackTrace()
+            //e.printStackTrace()
         }
         mPaths = null
-        isPlaying = false
         animationListener?.onAnimationEnd()
         if (clearViewAfterStop) {
             mBitmapDrawer.clear()
@@ -236,18 +239,17 @@ open class FrameAnimation private constructor(
         return drawIndex
     }
 
+    override fun stopAnimationFromPool() {
+        drawIndex = 0
+        mHandler.sendEmptyMessage(MSG_STOP)
+    }
+
     private fun draw() {
-        animationListener?.onAnimationStart()
+        mHandler.sendEmptyMessage(MSG_ANIMATION_START)
         drawThread = thread(start = true) {
             while (isPlaying) {
                 val startTime = SystemClock.uptimeMillis()
-                val bitmap = mBitmapPool.take()
-                if (bitmap == null) {
-                    //the animation has finished playing, set the index 0
-                    drawIndex = 0
-                    mHandler.sendEmptyMessage(MSG_STOP)
-                    continue
-                }
+                val bitmap = mBitmapPool.take() ?: continue
                 configureDrawMatrix(bitmap, mSurfaceView ?: mTextureView!!)
                 val canvas = mBitmapDrawer.draw(bitmap, mDrawMatrix) ?: continue
                 val interval = SystemClock.uptimeMillis() - startTime
@@ -255,13 +257,13 @@ open class FrameAnimation private constructor(
                     try {
                         Thread.sleep(frameInterval - interval)
                     } catch (e: InterruptedException) {
-                        e.printStackTrace()
+                        //e.printStackTrace()
                     }
                 }
                 drawIndex++
                 mBitmapDrawer.unlockAndPost(canvas)
                 if (mBitmapPool.getRepeatStrategy() != null) {
-                    val strategy=mBitmapPool.getRepeatStrategy()
+                    val strategy = mBitmapPool.getRepeatStrategy()
                     if (strategy!!.getTotalFrames() == FRAMES_INFINITE) {
                         animationListener?.onProgress(0f, drawIndex, strategy.getTotalFrames())
                     } else {
@@ -402,12 +404,12 @@ open class FrameAnimation private constructor(
         fun onAnimationStart()
 
         /**
-         *  notifies the end of the animation.
+         * notifies the end of the animation.
          */
         fun onAnimationEnd()
 
         /**
-         * callback for animation playing progress
+         * callback for animation playing progress not in UI thread
          * @param progress 0-1, if the animation played infinitely, always 0
          * @param frameIndex the current frame index
          * @param totalFrames the total frames of the animation, -1 if the animation played infinitely

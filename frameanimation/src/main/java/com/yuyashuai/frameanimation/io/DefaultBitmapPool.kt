@@ -50,6 +50,7 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
 
     private var decodeThread: Thread? = null
 
+    private var mInteractionListener: AnimationInteractionListener? = null
     /**
      * If the pool is stopping, wait until it stops completely before working
      */
@@ -60,9 +61,6 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
     private var skipInBitmapCount = 5
 
     private val tempMap = ConcurrentHashMap<Int, Bitmap?>()
-
-    @Volatile
-    private var releaseWhenEmpty = false
 
     override fun start(repeatStrategy: RepeatStrategy, index: Int) {
         //if the pool is Stopping, wait until it stops
@@ -75,11 +73,11 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
             relay(repeatStrategy)
             return
         }
+        isWorking = true
         mIndex.set(index)
         repeat((0 until 5 - mDecoderPool.size).count()) {
             mDecoderPool.offer(DefaultBitmapDecoder(mContext))
         }
-        isWorking = true
         mRepeatStrategy = repeatStrategy
         mDecodeExecutors = Executors.newFixedThreadPool(6)
         decodeThread = Thread {
@@ -120,15 +118,15 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
             try {
                 mDecodeExecutors?.execute {
                     val index = mIndex.getAndIncrement()
-                    val decoder = if (mDecoderPool.isNotEmpty()) {
-                        mDecoderPool.poll()
-                    } else {
-                        DefaultBitmapDecoder(mContext)
-                    }
+                    val decoder = mDecoderPool.poll() ?: DefaultBitmapDecoder(mContext)
                     if (!Thread.currentThread().isInterrupted) {
                         val path = mRepeatStrategy?.getNextFrameResource(index)
+                        if (isStopping) {
+                            return@execute
+                        }
                         if (path == null) {
-                            releaseWhenEmpty()
+                            release()
+                            mInteractionListener?.stopAnimationFromPool()
                             mDecoderPool.offer(decoder)
                             mCountDownLatch.countDown()
                             return@execute
@@ -143,13 +141,13 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
                     mCountDownLatch.countDown()
                 }
             } catch (e: RejectedExecutionException) {
-                e.printStackTrace()
+                //e.printStackTrace()
             }
         }
         try {
             mCountDownLatch.await()
         } catch (e: InterruptedException) {
-            e.printStackTrace()
+            //e.printStackTrace()
         }
         insertPool(tempMap)
         decodeBitmap()
@@ -185,19 +183,13 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
                     mPool.put(map[it])
                 }
             } catch (e: InterruptedException) {
-                e.printStackTrace()
+                //e.printStackTrace()
             }
         }
         map.clear()
     }
 
     override fun take(): Bitmap? {
-        if (releaseWhenEmpty) {
-            if (mPool.isEmpty()) {
-                release()
-                return null
-            }
-        }
         return try {
             if (isWorking && !isStopping) {
                 mPool.take()
@@ -205,7 +197,7 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
                 null
             }
         } catch (e: InterruptedException) {
-            e.printStackTrace()
+            //e.printStackTrace()
             null
         }
     }
@@ -217,12 +209,8 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
         mInBitmapPool.offer(WeakReference(bitmap))
     }
 
-    override fun isReleased(): Boolean {
-        return isStopping || !isWorking
-    }
-
-    private fun releaseWhenEmpty() {
-        releaseWhenEmpty = true
+    override fun setInteractionListener(listener: AnimationInteractionListener?) {
+        mInteractionListener = listener
     }
 
     override fun getRepeatStrategy(): RepeatStrategy? {
@@ -233,7 +221,6 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
         if (isStopping || !isWorking) {
             return
         }
-        releaseWhenEmpty = false
         isStopping = true
         decodeThread?.interrupt()
         mDecodeExecutors?.shutdownNow()

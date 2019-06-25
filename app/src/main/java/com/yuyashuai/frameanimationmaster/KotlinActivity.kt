@@ -11,7 +11,8 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
 
     private val resources =
             listOf("zone720p",
-                    "traffic720p")
+                    "traffic720p",
+                    "crow")
     private val scaleTypes =
             listOf("CENTER",
                     "CENTER_INSIDE",
@@ -28,9 +29,9 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_kotlin)
-        acs_repeat_mode.adapter = ArrayAdapter<String>(this, R.layout.spinner_text_view, repeatModes)
-        acs_resource.adapter = ArrayAdapter<String>(this, R.layout.spinner_text_view, resources)
-        acs_scale_type.adapter = ArrayAdapter<String>(this, R.layout.spinner_text_view, scaleTypes)
+        acs_repeat_mode.adapter = ArrayAdapter(this, R.layout.spinner_text_view, repeatModes)
+        acs_resource.adapter = ArrayAdapter(this, R.layout.spinner_text_view, resources)
+        acs_scale_type.adapter = ArrayAdapter(this, R.layout.spinner_text_view, scaleTypes)
         acs_resource.onItemSelectedListener = this
         acs_repeat_mode.onItemSelectedListener = this
         acs_scale_type.onItemSelectedListener = this
@@ -39,6 +40,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         sb_frame_interval.setOnSeekBarChangeListener(this)
         animationView.setAnimationListener(this)
         btn_start.setOnClickListener {
+            //animationView.stopAnimation()
             animationView.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString())
         }
 
@@ -92,7 +94,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
     }
 
     override fun onProgress(progress: Float, frameIndex: Int, totalFrames: Int) {
-        System.out.println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
+        //System.out.println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

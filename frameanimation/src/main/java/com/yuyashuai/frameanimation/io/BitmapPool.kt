@@ -18,23 +18,18 @@ interface BitmapPool {
      * Start running,
      * @param repeatStrategy bitmap order
      */
-    fun start(repeatStrategy: RepeatStrategy,index:Int)
+    fun start(repeatStrategy: RepeatStrategy, index: Int)
 
     /**
      * recycler the bitmap for reuse
      */
     fun recycle(bitmap: Bitmap)
 
+    fun setInteractionListener(listener: AnimationInteractionListener?)
     /**
      * release all resources, like thread, bitmap...
      */
     fun release()
 
-    /**
-     * @return the pool isWorking or released
-     */
-    fun isReleased():Boolean
-
-
-    fun getRepeatStrategy():RepeatStrategy?
+    fun getRepeatStrategy(): RepeatStrategy?
 }
