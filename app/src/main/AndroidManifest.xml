@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".TestActivity">
+
+        </activity>
         <activity
             android:name=".KotlinActivity"
             android:launchMode="singleTop"
@@ -26,9 +29,7 @@
         <activity
             android:name=".JavaActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="landscape">
-
-        </activity>
+            android:screenOrientation="landscape"></activity>
     </application>
 
 </manifest>

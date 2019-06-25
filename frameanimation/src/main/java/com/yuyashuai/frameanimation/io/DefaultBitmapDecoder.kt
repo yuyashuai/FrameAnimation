@@ -3,7 +3,6 @@ package com.yuyashuai.frameanimation.io
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import com.yuyashuai.frameanimation.FrameAnimation
 import java.io.IOException
 
@@ -38,19 +37,14 @@ open class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: IllegalArgumentException) {
-            checkException(e)
+            if (e.message?.contains("Problem decoding into existing bitmap") == true) {
+                options.inBitmap = null
+                return BitmapFactory.decodeStream(assets.open(assetPath), null, options)
+            } else {
+                throw e
+            }
         }
         return null
-    }
-
-    private fun checkException(e: Exception) {
-        if (e.message?.contains("Problem decoding into existing bitmap") == true) {
-            Log.e(
-                TAG,
-                "Make sure the resolution of all images is the same, if not call 'setSupportInBitmap(false)'.\n but this will lead to frequent gc "
-            )
-        }
-        throw e
     }
 
     private fun decodeFileBitmap(filePath: String, inBitmap: Bitmap?): Bitmap? {
@@ -63,7 +57,12 @@ open class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: IllegalArgumentException) {
-            checkException(e)
+            if (e.message?.contains("Problem decoding into existing bitmap") == true) {
+                options.inBitmap = null
+                return BitmapFactory.decodeFile(filePath, options)
+            } else {
+                throw e
+            }
         }
         return null
     }
