@@ -9,6 +9,7 @@ import com.yuyashuai.frameanimation.FrameAnimation
  *  @see RepeatReverse
  *  @see RepeatReverseInfinite
  *  @see RepeatOnce
+ *  @see RepeatTail
  */
 interface RepeatStrategy {
     /**

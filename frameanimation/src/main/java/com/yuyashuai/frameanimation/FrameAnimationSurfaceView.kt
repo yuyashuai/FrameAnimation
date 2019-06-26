@@ -20,6 +20,10 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
 
     private var lastStopIndex = 0
     private var lastStopPaths: MutableList<FrameAnimation.PathData>? = null
+    /**
+     * whether to resume playback
+     */
+    var restoreEnable = true
 
     init {
         animation.bindView(this)
@@ -42,7 +46,7 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
      * resume animation
      */
     private fun restoreAndStart() {
-        if (lastStopPaths != null) {
+        if (lastStopPaths != null && restoreEnable) {
             playAnimation(lastStopPaths!!, lastStopIndex)
         }
     }

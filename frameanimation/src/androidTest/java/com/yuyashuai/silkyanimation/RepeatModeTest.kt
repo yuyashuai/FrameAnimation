@@ -2,10 +2,7 @@ package com.yuyashuai.silkyanimation
 
 import androidx.test.runner.AndroidJUnit4
 import com.yuyashuai.frameanimation.FrameAnimation
-import com.yuyashuai.frameanimation.repeatmode.RepeatInfinite
-import com.yuyashuai.frameanimation.repeatmode.RepeatOnce
-import com.yuyashuai.frameanimation.repeatmode.RepeatReverse
-import com.yuyashuai.frameanimation.repeatmode.RepeatReverseInfinite
+import com.yuyashuai.frameanimation.repeatmode.*
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -32,20 +29,26 @@ class RepeatModeTest {
         val repeatReverse = RepeatReverse().apply {
             setPaths(paths)
         }
+        val tailRepeat = RepeatTail(2).apply {
+            setPaths(paths)
+        }
         val arr1 = IntArray(100)
         val arr2 = IntArray(100)
         val arr3 = IntArray(100)
         val arr4 = IntArray(100)
+        val arr5 = IntArray(100)
         repeat(100) {
             arr1[it] = repeatReverseInfinite.getNextFrameResource(it)?.path?.toInt() ?: -1
             arr2[it] = repeatInfinite.getNextFrameResource(it)?.path?.toInt() ?: -1
             arr3[it] = repeatOnce.getNextFrameResource(it)?.path?.toInt() ?: -1
             arr4[it] = repeatReverse.getNextFrameResource(it)?.path?.toInt() ?: -1
+            arr5[it] = tailRepeat.getNextFrameResource(it)?.path?.toInt() ?: -1
         }
-        System.out.println("repeatInfinite: [${intArrayToString(arr2)}]")
-        System.out.println("repeatOnce: [${intArrayToString(arr3)}]")
-        System.out.println("repeatReverse: [${intArrayToString(arr4)}]")
-        System.out.println("RepeatReverseInfinite: [${intArrayToString(arr1)}]")
+        println("repeatInfinite: [${intArrayToString(arr2)}]")
+        println("repeatOnce: [${intArrayToString(arr3)}]")
+        println("repeatReverse: [${intArrayToString(arr4)}]")
+        println("RepeatReverseInfinite: [${intArrayToString(arr1)}]")
+        println("tailRepeat: [${intArrayToString(arr5)}]")
     }
 
     private fun intArrayToString(arr: IntArray): String {
