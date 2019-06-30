@@ -2,6 +2,7 @@ package com.yuyashuai.frameanimationmaster
 
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.yuyashuai.frameanimation.FrameAnimation
@@ -28,6 +29,8 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                     "ONCE")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_kotlin)
         acs_repeat_mode.adapter = ArrayAdapter(this, R.layout.spinner_text_view, repeatModes)
         acs_resource.adapter = ArrayAdapter(this, R.layout.spinner_text_view, resources)

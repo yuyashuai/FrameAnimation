@@ -81,7 +81,10 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
         mRepeatStrategy = repeatStrategy
         mDecodeExecutors = Executors.newFixedThreadPool(6)
         decodeThread = Thread {
-            decodeBitmap()
+            while (isWorking && !isStopping) {
+                decodeBitmap()
+            }
+            clearAndStop()
         }
         decodeThread?.start()
     }
@@ -105,10 +108,6 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
     }
 
     private fun decodeBitmap() {
-        if (!isWorking || isStopping) {
-            clearAndStop()
-            return
-        }
         if (restartNextDecode) {
             mIndex.set(0)
             restartNextDecode = false
@@ -150,7 +149,6 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
             //e.printStackTrace()
         }
         insertPool(tempMap)
-        decodeBitmap()
     }
 
     /**
