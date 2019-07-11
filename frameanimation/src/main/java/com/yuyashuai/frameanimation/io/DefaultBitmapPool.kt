@@ -197,6 +197,7 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
         if (releaseWhenEmpty) {
             if (mPool.isEmpty()) {
                 release()
+                mInteractionListener?.stopAnimationFromPool()
                 return null
             }
         }
