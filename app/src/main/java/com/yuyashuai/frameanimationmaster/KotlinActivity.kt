@@ -97,7 +97,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
     }
 
     override fun onProgress(progress: Float, frameIndex: Int, totalFrames: Int) {
-        //System.out.println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
+        //println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

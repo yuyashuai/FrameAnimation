@@ -62,6 +62,9 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
 
     private val tempMap = ConcurrentHashMap<Int, Bitmap?>()
 
+    @Volatile
+    private var releaseWhenEmpty = false
+
     override fun start(repeatStrategy: RepeatStrategy, index: Int) {
         //if the pool is Stopping, wait until it stops
         if (isStopping) {
@@ -124,8 +127,7 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
                             return@execute
                         }
                         if (path == null) {
-                            release()
-                            mInteractionListener?.stopAnimationFromPool()
+                            releaseWhenEmpty()
                             mDecoderPool.offer(decoder)
                             mCountDownLatch.countDown()
                             return@execute
@@ -149,6 +151,10 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
             //e.printStackTrace()
         }
         insertPool(tempMap)
+    }
+
+    private fun releaseWhenEmpty() {
+        releaseWhenEmpty = true
     }
 
     /**
@@ -188,6 +194,12 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
     }
 
     override fun take(): Bitmap? {
+        if (releaseWhenEmpty) {
+            if (mPool.isEmpty()) {
+                release()
+                return null
+            }
+        }
         return try {
             if (isWorking && !isStopping) {
                 mPool.take()
@@ -219,6 +231,7 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
         if (isStopping || !isWorking) {
             return
         }
+        releaseWhenEmpty = false
         isStopping = true
         decodeThread?.interrupt()
         mDecodeExecutors?.shutdownNow()

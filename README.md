@@ -18,7 +18,7 @@
 ```
 2. module gradle
 ```groovy
- implementation 'com.yuyashuai.frameanimation:frameanimation:2.0.8'
+ implementation 'com.yuyashuai.frameanimation:frameanimation:2.1.0'
 ```
 
 ### usage
