@@ -28,6 +28,7 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
 
     init {
         animation.bindView(this)
+        isAvailable
     }
 
     override fun onDetachedFromWindow() {
