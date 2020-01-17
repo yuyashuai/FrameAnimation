@@ -6,5 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.yuyashuai.frameanimationmaster.JavaActivity">
-
+    <com.yuyashuai.frameanimation.FrameAnimationSurfaceView
+            android:id="@+id/fsv_java_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

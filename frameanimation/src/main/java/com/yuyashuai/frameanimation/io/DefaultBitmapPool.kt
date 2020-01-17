@@ -7,6 +7,10 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 
+private const val WORKING = 0
+private const val STOPPING = 1
+private const val TERMINATED = 2
+
 /**
  * @author yuyashuai   2019-04-24.
  */
@@ -39,7 +43,7 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
     private var isWorking = false
 
     /**
-     *Indicates whether the pool is trying to stop
+     * Indicates whether the pool is trying to stop
      */
     @Volatile
     private var isStopping = false
@@ -51,6 +55,9 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
     private var decodeThread: Thread? = null
 
     private var mInteractionListener: AnimationInteractionListener? = null
+
+    private val state = AtomicInteger(TERMINATED)
+
     /**
      * If the pool is stopping, wait until it stops completely before working
      */
@@ -82,15 +89,23 @@ open class DefaultBitmapPool(context: Context) : BitmapPool {
             mDecoderPool.offer(DefaultBitmapDecoder(mContext))
         }
         mRepeatStrategy = repeatStrategy
-        mDecodeExecutors = Executors.newFixedThreadPool(6)
+        mDecodeExecutors =
+                ThreadPoolExecutor(0, 16, 10000,
+                        TimeUnit.MILLISECONDS, SynchronousQueue<Runnable>())
         decodeThread = Thread {
             while (isWorking && !isStopping) {
                 decodeBitmap()
             }
+            mDecodeExecutors!!.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
             clearAndStop()
         }
         decodeThread?.start()
     }
+
+    private fun setState(newState:Int){
+        state.set(newState)
+    }
+
 
     private fun waitToStart(strategy: RepeatStrategy) {
         waitToStart = true

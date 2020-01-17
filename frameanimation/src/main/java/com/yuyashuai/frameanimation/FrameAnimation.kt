@@ -18,6 +18,7 @@ import com.yuyashuai.frameanimation.io.DefaultBitmapPool
 import com.yuyashuai.frameanimation.repeatmode.*
 import java.io.File
 import kotlin.concurrent.thread
+import kotlin.math.roundToInt
 
 /**
  * @author yuyashuai   2019-04-25.
@@ -27,8 +28,13 @@ open class FrameAnimation private constructor(
         private var mSurfaceView: SurfaceView?,
         private var isTextureViewMode: Boolean?,
         private val mContext: Context) : AnimationController, AnimationInteractionListener {
+
     constructor(surfaceView: SurfaceView) : this(null, surfaceView, false, surfaceView.context)
     constructor(textureView: TextureView) : this(textureView, null, true, textureView.context)
+
+    /**
+     * must call [bindView] before playing animation if you create objects with this constructor
+     */
     constructor(context: Context) : this(null, null, null, context)
 
     private lateinit var mBitmapDrawer: BitmapDrawer
@@ -64,7 +70,7 @@ open class FrameAnimation private constructor(
      * Whether to clear the view when the animation finished
      * if false the view will display the last frame
      */
-    private var clearViewAfterStop = true
+    private var freezeLastFrame = false
 
     private val MSG_STOP = 0X01
     private val MSG_ANIMATION_START = 0X02
@@ -97,20 +103,12 @@ open class FrameAnimation private constructor(
         }
     }
 
-    override fun isPlaying(): Boolean {
-        return isPlaying
-    }
+    override fun isPlaying() = isPlaying
 
-    override fun getFrameInterval(): Int {
-        return frameInterval
-    }
+    override fun getFrameInterval() = frameInterval
 
     override fun setFrameInterval(frameInterval: Int) {
-        this.frameInterval = if (frameInterval <= 0) {
-            0
-        } else {
-            frameInterval
-        }
+        this.frameInterval = frameInterval.coerceAtLeast(0)
     }
 
     /**
@@ -131,37 +129,30 @@ open class FrameAnimation private constructor(
         mBitmapDrawer = SurfaceViewBitmapDrawer(surfaceView)
     }
 
-    override fun supportInBitmap(): Boolean {
-        return supportInBitmap
-    }
+    override fun supportInBitmap() = supportInBitmap
 
     override fun setSupportInBitmap(supportInBitmap: Boolean) {
         this.supportInBitmap = supportInBitmap
     }
 
-    override fun clearViewAfterStop(clearViewAfterStop: Boolean) {
-        this.clearViewAfterStop = clearViewAfterStop
+    override fun freezeLastFrame(freezeLastFrame: Boolean) {
+        this.freezeLastFrame = freezeLastFrame
     }
 
-    override fun clearViewAfterStop(): Boolean {
-        return clearViewAfterStop
-    }
+    override fun freezeLastFrame() = freezeLastFrame
 
     /**
      * play animation from assets files
      * @param assetsPath must be a directory
      */
-    override fun playAnimationFromAssets(assetsPath: String) {
-        playAnimationFromAssets(assetsPath, 0)
-    }
+    override fun playAnimationFromAssets(assetsPath: String) = playAnimationFromAssets(assetsPath, 0)
+
 
     /**
      * play animation from a file directory path
      * @param filePath must be a directory
      */
-    override fun playAnimationFromFile(filePath: String) {
-        playAnimationFromFile(filePath, 0)
-    }
+    override fun playAnimationFromFile(filePath: String) = playAnimationFromFile(filePath, 0)
 
     /**
      * play animation from assets files
@@ -169,10 +160,7 @@ open class FrameAnimation private constructor(
      * @param index the start frame index
      */
     override fun playAnimationFromAssets(assetsPath: String, index: Int) {
-        val paths = Util.getPathList(mContext, assetsPath)
-        playAnimation(paths.map {
-            PathData(it, PATH_ASSETS)
-        } as MutableList<PathData>, index)
+        playAnimation(FrameAnimationUtil.getPathList(mContext, assetsPath), index)
     }
 
     /**
@@ -181,10 +169,7 @@ open class FrameAnimation private constructor(
      * @param index the start frame index
      */
     override fun playAnimationFromFile(filePath: String, index: Int) {
-        val paths = Util.getPathList(File(filePath))
-        playAnimation(paths.map {
-            PathData(it, PATH_FILE)
-        } as MutableList<PathData>, index)
+        playAnimation(FrameAnimationUtil.getPathList(File(filePath)), index)
     }
 
     var mPaths: MutableList<PathData>? = null
@@ -219,6 +204,7 @@ open class FrameAnimation private constructor(
 
     /**
      * stop the animation async
+     * @return the frame index when the animation stops
      */
     override fun stopAnimation(): Int {
         if (!isPlaying) {
@@ -233,7 +219,7 @@ open class FrameAnimation private constructor(
         }
         mPaths = null
         animationListener?.onAnimationEnd()
-        if (clearViewAfterStop) {
+        if (!freezeLastFrame) {
             mBitmapDrawer.clear()
         }
         return drawIndex
@@ -247,6 +233,7 @@ open class FrameAnimation private constructor(
     private fun draw() {
         mHandler.sendEmptyMessage(MSG_ANIMATION_START)
         drawThread = thread(start = true) {
+            //todo don't allocate objects in this block
             while (isPlaying) {
                 val startTime = SystemClock.uptimeMillis()
                 val bitmap = mBitmapPool.take() ?: continue
@@ -262,18 +249,24 @@ open class FrameAnimation private constructor(
                 }
                 drawIndex++
                 mBitmapDrawer.unlockAndPost(canvas)
-                if (mBitmapPool.getRepeatStrategy() != null) {
-                    val strategy = mBitmapPool.getRepeatStrategy()
-                    if (strategy!!.getTotalFrames() == FRAMES_INFINITE) {
-                        animationListener?.onProgress(0f, drawIndex, strategy.getTotalFrames())
-                    } else {
-                        animationListener?.onProgress(drawIndex.toFloat() / strategy.getTotalFrames().toFloat(), drawIndex, strategy.getTotalFrames())
+                animationListener?.let { listener ->
+                    mBitmapPool.getRepeatStrategy()?.let { strategy ->
+                        listener.onProgress(
+                                if (strategy.getTotalFrames() == FRAMES_INFINITE) {
+                                    0f
+                                } else {
+                                    drawIndex.toFloat() / strategy.getTotalFrames().toFloat()
+                                }
+                                , drawIndex, strategy.getTotalFrames()
+                        )
+
                     }
                 }
+
                 if (supportInBitmap) {
                     mBitmapPool.recycle(bitmap)
                 }
-                if (!isPlaying && clearViewAfterStop) {
+                if (!isPlaying && !freezeLastFrame) {
                     mBitmapDrawer.clear()
                 }
             }
@@ -356,8 +349,8 @@ open class FrameAnimation private constructor(
         when (mScaleType) {
             ScaleType.MATRIX -> return
             ScaleType.CENTER -> mDrawMatrix.setTranslate(
-                    Math.round((dstWidth - srcWidth) * 0.5f).toFloat(),
-                    Math.round((dstHeight - srcHeight) * 0.5f).toFloat()
+                    ((dstWidth - srcWidth) * 0.5f).roundToInt().toFloat(),
+                    ((dstHeight - srcHeight) * 0.5f).roundToInt().toFloat()
             )
             ScaleType.CENTER_CROP -> {
                 val scale: Float
@@ -379,13 +372,10 @@ open class FrameAnimation private constructor(
                 val scale: Float = if (srcWidth <= dstWidth && srcHeight <= dstHeight) {
                     1.0f
                 } else {
-                    Math.min(
-                            dstWidth.toFloat() / srcWidth.toFloat(),
-                            dstHeight.toFloat() / srcHeight.toFloat()
-                    )
+                    (dstWidth.toFloat() / srcWidth.toFloat()).coerceAtMost(dstHeight.toFloat() / srcHeight.toFloat())
                 }
-                val dx = Math.round((dstWidth - srcWidth * scale) * 0.5f).toFloat()
-                val dy = Math.round((dstHeight - srcHeight * scale) * 0.5f).toFloat()
+                val dx = ((dstWidth - srcWidth * scale) * 0.5f).roundToInt().toFloat()
+                val dy = ((dstHeight - srcHeight * scale) * 0.5f).roundToInt().toFloat()
                 mDrawMatrix.setScale(scale, scale)
                 mDrawMatrix.postTranslate(dx, dy)
             }

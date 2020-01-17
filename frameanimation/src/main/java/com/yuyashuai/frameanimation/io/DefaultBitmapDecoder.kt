@@ -32,6 +32,7 @@ open class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
         if (inBitmap != null) {
             options.inBitmap = inBitmap
         }
+
         try {
             return BitmapFactory.decodeStream(assets.open(assetPath), null, options)
         } catch (e: IOException) {

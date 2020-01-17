@@ -1,6 +1,7 @@
 package com.yuyashuai.frameanimation
 
 import android.graphics.Matrix
+import androidx.annotation.IntRange
 import com.yuyashuai.frameanimation.FrameAnimation.RepeatMode
 import com.yuyashuai.frameanimation.FrameAnimation.ScaleType
 import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
@@ -92,7 +93,7 @@ interface AnimationController {
      * set the frame interval between two frames
      * @param frameInterval unit millisecond
      */
-    fun setFrameInterval(frameInterval: Int)
+    fun setFrameInterval(@IntRange(from = 0) frameInterval: Int)
 
     /**
      * get the frame interval between two frames
@@ -103,12 +104,12 @@ interface AnimationController {
      * Whether to clear the view when the animation finished
      * if false the view will display the last frame
      */
-    fun clearViewAfterStop(clearViewAfterStop: Boolean)
+    fun freezeLastFrame(freezeLastFrame: Boolean)
 
     /**
-     * @see clearViewAfterStop
+     * @see freezeLastFrame
      */
-    fun clearViewAfterStop(): Boolean
+    fun freezeLastFrame(): Boolean
 
     /**
      * Binds an animation listener to this animation. The animation listener

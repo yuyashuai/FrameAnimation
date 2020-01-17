@@ -10,6 +10,7 @@ import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
 interface BitmapPool {
     /**
      * take an bitmap from the pool，maybe a blacking method
+     * don't allocate objects in this method
      * @return null if the pool stop running
      */
     fun take(): Bitmap?
@@ -24,6 +25,7 @@ interface BitmapPool {
      * recycler the bitmap for reuse
      */
     fun recycle(bitmap: Bitmap)
+
 
     fun setInteractionListener(listener: AnimationInteractionListener?)
     /**

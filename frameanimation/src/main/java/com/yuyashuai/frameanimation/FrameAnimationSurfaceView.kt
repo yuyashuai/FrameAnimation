@@ -2,6 +2,7 @@ package com.yuyashuai.frameanimation
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 
@@ -12,11 +13,10 @@ import android.view.View
  */
 class FrameAnimationSurfaceView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int, val animation: FrameAnimation)
     : SurfaceView(context, attributeSet, defStyle), AnimationController by animation {
-    constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int)
-            : this(context, attributeSet, defStyle, FrameAnimation(context))
 
-    constructor(context: Context, attributeSet: AttributeSet?) : this(context, attributeSet, 0)
-    constructor(context: Context) : this(context, null)
+    @JvmOverloads
+    constructor(context: Context, attributeSet: AttributeSet? = null, defStyle: Int = 0)
+            : this(context, attributeSet, defStyle, FrameAnimation(context))
 
     private var lastStopIndex = 0
     private var lastStopPaths: MutableList<FrameAnimation.PathData>? = null
@@ -27,6 +27,17 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
 
     init {
         animation.bindView(this)
+        holder.addCallback(object : SurfaceHolder.Callback {
+
+            override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
+            }
+
+            override fun surfaceDestroyed(holder: SurfaceHolder?) {
+            }
+
+            override fun surfaceCreated(holder: SurfaceHolder?) {
+            }
+        })
     }
 
     override fun onDetachedFromWindow() {

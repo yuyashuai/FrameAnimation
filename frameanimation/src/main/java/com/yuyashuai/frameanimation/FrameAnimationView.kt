@@ -12,11 +12,10 @@ import android.view.View
  */
 class FrameAnimationView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int, val animation: FrameAnimation)
     : TextureView(context, attributeSet, defStyle), AnimationController by animation {
-    constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int)
-            : this(context, attributeSet, defStyle, FrameAnimation(context))
 
-    constructor(context: Context, attributeSet: AttributeSet?) : this(context, attributeSet, 0)
-    constructor(context: Context) : this(context, null)
+    @JvmOverloads
+    constructor(context: Context, attributeSet: AttributeSet? = null, defStyle: Int = 0)
+            : this(context, attributeSet, defStyle, FrameAnimation(context))
 
     private var lastStopIndex = 0
     private var lastStopPaths: MutableList<FrameAnimation.PathData>? = null

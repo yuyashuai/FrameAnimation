@@ -4,7 +4,7 @@ import com.yuyashuai.frameanimation.FrameAnimation
 
 /**
  * @author yuyashuai   2019-05-08.
- *  By implementing this interface, you can customize the playback or repeat order of animations
+ *  you can customize the playback or repeat order of animations by implementing this interface
  *  @see RepeatInfinite
  *  @see RepeatReverse
  *  @see RepeatReverseInfinite
