@@ -13,6 +13,10 @@ class RepeatOnce : RepeatStrategy {
         paths = list.toMutableList()
     }
 
+    override fun clear() {
+        paths.clear()
+    }
+
     override fun getNextFrameResource(frameIndex: Int): FrameAnimation.PathData? {
         return if (frameIndex >= paths.size) {
             null

@@ -13,10 +13,10 @@ import org.junit.runner.RunWith
  * @author yuyashuai   2019-05-31.
  */
 @RunWith(AndroidJUnit4::class)
-class KotlinActivityTest{
+class MainActivityTest{
 
     @get:Rule
-    val mainRules=ActivityTestRule<KotlinActivity>(KotlinActivity::class.java)
+    val mainRules=ActivityTestRule<MainActivity>(MainActivity::class.java)
 
     @Test
     fun click(){

@@ -13,8 +13,8 @@ import android.view.View
 import com.yuyashuai.frameanimation.drawer.BitmapDrawer
 import com.yuyashuai.frameanimation.drawer.SurfaceViewBitmapDrawer
 import com.yuyashuai.frameanimation.drawer.TextureBitmapDrawer
-import com.yuyashuai.frameanimation.io.AnimationInteractionListener
-import com.yuyashuai.frameanimation.io.DefaultBitmapPool
+import com.yuyashuai.frameanimation.io.BitmapPool
+import com.yuyashuai.frameanimation.io.BitmapPoolImpl
 import com.yuyashuai.frameanimation.repeatmode.*
 import java.io.File
 import kotlin.concurrent.thread
@@ -27,7 +27,7 @@ open class FrameAnimation private constructor(
         private var mTextureView: TextureView?,
         private var mSurfaceView: SurfaceView?,
         private var isTextureViewMode: Boolean?,
-        private val mContext: Context) : AnimationController, AnimationInteractionListener {
+        private val mContext: Context) : AnimationController {
 
     constructor(surfaceView: SurfaceView) : this(null, surfaceView, false, surfaceView.context)
     constructor(textureView: TextureView) : this(textureView, null, true, textureView.context)
@@ -41,10 +41,7 @@ open class FrameAnimation private constructor(
 
     private val TAG = javaClass.simpleName
 
-    private val mBitmapPool = DefaultBitmapPool(mContext).apply {
-        setInteractionListener(this@FrameAnimation)
-    }
-
+    private var mBitmapPool: BitmapPool
     /**
      * Indicates whether the animation is playing
      */
@@ -101,6 +98,7 @@ open class FrameAnimation private constructor(
         } else if (isTextureViewMode == false) {
             mBitmapDrawer = SurfaceViewBitmapDrawer(mSurfaceView!!)
         }
+        mBitmapPool = BitmapPoolImpl(mContext)
     }
 
     override fun isPlaying() = isPlaying
@@ -175,6 +173,13 @@ open class FrameAnimation private constructor(
     var mPaths: MutableList<PathData>? = null
         private set
 
+
+    override fun setBitmapPool(bitmapPool: BitmapPool) {
+        mBitmapPool = bitmapPool
+    }
+
+    override fun playAnimation(paths: MutableList<PathData>) = playAnimation(paths, 0)
+
     /**
      * start playing animations
      * @param paths the path data
@@ -211,64 +216,68 @@ open class FrameAnimation private constructor(
             return 0
         }
         isPlaying = false
+        drawThread?.interrupt()
         mBitmapPool.release()
-        try {
-            drawThread?.interrupt()
-        } catch (e: InterruptedException) {
-            //e.printStackTrace()
-        }
         mPaths = null
+        mRepeatStrategy.clear()
         animationListener?.onAnimationEnd()
-        if (!freezeLastFrame) {
-            mBitmapDrawer.clear()
-        }
         return drawIndex
-    }
-
-    override fun stopAnimationFromPool() {
-        drawIndex = 0
-        mHandler.sendEmptyMessage(MSG_STOP)
     }
 
     private fun draw() {
         mHandler.sendEmptyMessage(MSG_ANIMATION_START)
         drawThread = thread(start = true) {
-            //todo don't allocate objects in this block
-            while (isPlaying) {
-                val startTime = SystemClock.uptimeMillis()
-                val bitmap = mBitmapPool.take() ?: continue
-                configureDrawMatrix(bitmap, mSurfaceView ?: mTextureView!!)
-                val canvas = mBitmapDrawer.draw(bitmap, mDrawMatrix) ?: continue
-                val interval = SystemClock.uptimeMillis() - startTime
-                if (interval < frameInterval) {
+            //todo don't allocate objects here
+            var drawing = true
+            try {
+                while (isPlaying && drawing) {
+                    val startTime = SystemClock.uptimeMillis()
+                    val bitmap = mBitmapPool.take()
+                    if (bitmap == null) {
+                        mHandler.sendEmptyMessage(MSG_STOP)
+                        drawing = false
+                        continue
+                    }
+                    configureDrawMatrix(bitmap, mSurfaceView ?: mTextureView!!)
+                    val canvas = mBitmapDrawer.draw(bitmap, mDrawMatrix) ?: continue
+                    val interval = SystemClock.uptimeMillis() - startTime
                     try {
-                        Thread.sleep(frameInterval - interval)
+                        if (interval < frameInterval) {
+                            Thread.sleep(frameInterval - interval)
+                        }
                     } catch (e: InterruptedException) {
-                        //e.printStackTrace()
+                        mBitmapDrawer.unlockAndPost(canvas)
+                        throw e
+                    }
+                    mBitmapDrawer.unlockAndPost(canvas)
+                    drawIndex++
+                    animationListener?.let { listener ->
+                        mBitmapPool.getRepeatStrategy()?.let { strategy ->
+                            listener.onProgress(
+                                    if (strategy.getTotalFrames() == FRAMES_INFINITE) {
+                                        0f
+                                    } else {
+                                        drawIndex.toFloat() / strategy.getTotalFrames().toFloat()
+                                    }
+                                    , drawIndex, strategy.getTotalFrames())
+
+                        }
+                    }
+
+                    if (supportInBitmap) {
+                        mBitmapPool.recycle(bitmap)
+                    }
+                    if (!isPlaying && !freezeLastFrame) {
+                        mBitmapDrawer.clear()
                     }
                 }
-                drawIndex++
-                mBitmapDrawer.unlockAndPost(canvas)
-                animationListener?.let { listener ->
-                    mBitmapPool.getRepeatStrategy()?.let { strategy ->
-                        listener.onProgress(
-                                if (strategy.getTotalFrames() == FRAMES_INFINITE) {
-                                    0f
-                                } else {
-                                    drawIndex.toFloat() / strategy.getTotalFrames().toFloat()
-                                }
-                                , drawIndex, strategy.getTotalFrames()
-                        )
 
-                    }
-                }
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+            }
 
-                if (supportInBitmap) {
-                    mBitmapPool.recycle(bitmap)
-                }
-                if (!isPlaying && !freezeLastFrame) {
-                    mBitmapDrawer.clear()
-                }
+            if (!freezeLastFrame) {
+                mBitmapDrawer.clear()
             }
             if (relayDraw) {
                 draw()
@@ -311,8 +320,8 @@ open class FrameAnimation private constructor(
     /**
      * @see setRepeatMode
      */
-    override fun setRepeatMode(repeatMode: RepeatStrategy) {
-        mRepeatStrategy = repeatMode
+    override fun setRepeatMode(repeatStrategy: RepeatStrategy) {
+        mRepeatStrategy = repeatStrategy
     }
 
     private val MATRIX_SCALE_ARRAY =

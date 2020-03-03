@@ -1,5 +1,6 @@
 package com.yuyashuai.frameanimationmaster
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -7,8 +8,9 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.yuyashuai.frameanimation.FrameAnimation
 import kotlinx.android.synthetic.main.activity_kotlin.*
+import kotlinx.android.synthetic.main.activity_test.*
 
-class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, FrameAnimation.FrameAnimationListener, SeekBar.OnSeekBarChangeListener {
+class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, FrameAnimation.FrameAnimationListener, SeekBar.OnSeekBarChangeListener {
 
     private val resources =
             listOf("zone720p",
@@ -27,6 +29,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
                     "REVERSE_INFINITE",
                     "INFINITE",
                     "ONCE")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
@@ -42,6 +45,7 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         sb_frame_interval.max = 300
         sb_frame_interval.setOnSeekBarChangeListener(this)
         animationView.setAnimationListener(this)
+        animationView.freezeLastFrame(true)
         btn_start.setOnClickListener {
             //animationView.stopAnimation()
             animationView.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString())
@@ -50,14 +54,16 @@ class KotlinActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, 
         btn_stop.setOnClickListener {
             animationView.stopAnimation()
         }
+
     }
 
     override fun onAnimationStart() {
-        Toast.makeText(applicationContext, "onAnimationStart", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(applicationContext, "onAnimationStart", Toast.LENGTH_SHORT).show()
     }
 
     override fun onAnimationEnd() {
-        Toast.makeText(applicationContext, "onAnimationEnd", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(applicationContext, "onAnimationEnd", Toast.LENGTH_SHORT).show()
+        println("onAnimationEnd-----------")
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {

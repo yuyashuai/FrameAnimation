@@ -14,6 +14,10 @@ class RepeatReverse : RepeatStrategy {
         reversePaths = list.toMutableList().asReversed()
     }
 
+    override fun clear() {
+        reversePaths.clear()
+    }
+
     override fun getNextFrameResource(frameIndex: Int): FrameAnimation.PathData? {
         return if (frameIndex >= reversePaths.size) {
             null

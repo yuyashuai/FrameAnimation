@@ -1,9 +1,9 @@
 package com.yuyashuai.frameanimation
 
 import android.graphics.Matrix
-import androidx.annotation.IntRange
 import com.yuyashuai.frameanimation.FrameAnimation.RepeatMode
 import com.yuyashuai.frameanimation.FrameAnimation.ScaleType
+import com.yuyashuai.frameanimation.io.BitmapPool
 import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
 
 /**
@@ -45,6 +45,12 @@ interface AnimationController {
     fun playAnimation(paths: MutableList<FrameAnimation.PathData>, index: Int)
 
     /**
+     * start playing animations
+     * @param paths the path data
+     */
+    fun playAnimation(paths: MutableList<FrameAnimation.PathData>)
+
+    /**
      * set the bitmap scale type
      * @see ScaleType
      */
@@ -72,7 +78,7 @@ interface AnimationController {
      * stop the animation async
      * @return the frame index when the animation stops
      */
-    fun stopAnimation():Int
+    fun stopAnimation(): Int
 
     /**
      * @return Whether the animation is playing
@@ -93,7 +99,7 @@ interface AnimationController {
      * set the frame interval between two frames
      * @param frameInterval unit millisecond
      */
-    fun setFrameInterval(@IntRange(from = 0) frameInterval: Int)
+    fun setFrameInterval( frameInterval: Int)
 
     /**
      * get the frame interval between two frames
@@ -117,4 +123,6 @@ interface AnimationController {
      * repetition of the animation.
      */
     fun setAnimationListener(listener: FrameAnimation.FrameAnimationListener)
+
+    fun setBitmapPool(bitmapPool: BitmapPool)
 }

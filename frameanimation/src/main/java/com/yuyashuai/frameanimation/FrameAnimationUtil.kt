@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
 import java.util.*
 
 /**
@@ -37,6 +38,12 @@ object FrameAnimationUtil {
         return mutableListOf()
     }
 
+    fun getPathList(context: Context, vararg assetsPaths: String): MutableList<FrameAnimation.PathData> {
+        return assetsPaths.flatMap {
+            getPathList(context, it)
+        }.toMutableList()
+    }
+
     /**
      * get the path list from file
      *
@@ -60,4 +67,9 @@ object FrameAnimationUtil {
         return list
     }
 
+    fun getPathList(vararg files: File): MutableList<FrameAnimation.PathData> {
+        return files.flatMap {
+            getPathList(it)
+        }.toMutableList()
+    }
 }

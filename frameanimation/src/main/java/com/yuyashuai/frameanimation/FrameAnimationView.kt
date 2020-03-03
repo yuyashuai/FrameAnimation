@@ -10,7 +10,7 @@ import android.view.View
  * @see TextureView
  * @author yuyashuai   2019-05-16.
  */
-class FrameAnimationView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int, val animation: FrameAnimation)
+class FrameAnimationView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int, private val animation: FrameAnimation)
     : TextureView(context, attributeSet, defStyle), AnimationController by animation {
 
     @JvmOverloads
@@ -27,7 +27,6 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
 
     init {
         animation.bindView(this)
-        isAvailable
     }
 
     override fun onDetachedFromWindow() {

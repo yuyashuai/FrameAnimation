@@ -17,10 +17,15 @@ class RepeatReverseInfinite : RepeatStrategy {
         paths.removeAt(paths.size - 1)
     }
 
+    override fun clear() {
+        reversePaths.clear()
+        paths.clear()
+    }
+
     override fun getNextFrameResource(frameIndex: Int): FrameAnimation.PathData? {
         if (paths.isNotEmpty()) {
             val repeatCount =
-                frameIndex / paths.size
+                    frameIndex / paths.size
             if (repeatCount % 2 == 0) {
                 return paths[frameIndex % paths.size]
             }

@@ -9,11 +9,12 @@ import java.io.IOException
 /**
  * @author yuyashuai   2019-04-24.
  */
-open class DefaultBitmapDecoder(context: Context) : BitmapDecoder {
+open class BitmapDecoderImpl(context: Context) : BitmapDecoder {
     private val assets = context.assets
     private val TAG = javaClass.simpleName
 
     override fun decodeBitmap(path: FrameAnimation.PathData, inBitmap: Bitmap?): Bitmap? {
+
         return when (path.type) {
             FrameAnimation.PATH_FILE -> decodeFileBitmap(path.path, inBitmap)
             FrameAnimation.PATH_ASSETS -> decodeAssetBitmap(path.path, inBitmap)

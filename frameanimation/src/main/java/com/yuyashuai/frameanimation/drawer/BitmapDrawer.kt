@@ -11,7 +11,7 @@ import android.graphics.Matrix
 interface BitmapDrawer {
     /**
      * draw bitmap
-     * @param matrix the matrix
+     * @param matrix the transform matrix
      * @return canvas if draw success otherwise return null
      */
     fun draw(bitmap: Bitmap,matrix: Matrix):Canvas?

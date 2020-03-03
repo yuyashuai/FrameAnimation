@@ -11,8 +11,9 @@ interface BitmapPool {
     /**
      * take an bitmap from the pool，maybe a blacking method
      * don't allocate objects in this method
-     * @return null if the pool stop running
+     * @return null a animation stop signal
      */
+    @Throws(InterruptedException::class)
     fun take(): Bitmap?
 
     /**
@@ -26,12 +27,13 @@ interface BitmapPool {
      */
     fun recycle(bitmap: Bitmap)
 
-
-    fun setInteractionListener(listener: AnimationInteractionListener?)
     /**
      * release all resources, like thread, bitmap...
      */
     fun release()
 
+    /**
+     * used for animation listener
+     */
     fun getRepeatStrategy(): RepeatStrategy?
 }

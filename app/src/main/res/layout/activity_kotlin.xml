@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.yuyashuai.frameanimationmaster.KotlinActivity">
+    tools:context="com.yuyashuai.frameanimationmaster.MainActivity">
 
     <com.yuyashuai.frameanimation.FrameAnimationView
         android:id="@+id/animationView"
@@ -83,5 +83,6 @@
         app:layout_constraintEnd_toEndOf="@+id/btn_start"
         app:layout_constraintStart_toStartOf="@+id/btn_start"
         app:layout_constraintTop_toBottomOf="@+id/btn_start" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -23,6 +23,10 @@ class RepeatTail(private val repeatStartPosition: Int) : RepeatStrategy {
         }
     }
 
+    override fun clear() {
+        paths.clear()
+    }
+
     override fun getTotalFrames(): Int {
         return FrameAnimation.FRAMES_INFINITE
     }

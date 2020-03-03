@@ -11,7 +11,7 @@ import android.view.View
  * @see SurfaceView
  * @author yuyashuai   2019-05-16.
  */
-class FrameAnimationSurfaceView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int, val animation: FrameAnimation)
+class FrameAnimationSurfaceView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int,private val animation: FrameAnimation)
     : SurfaceView(context, attributeSet, defStyle), AnimationController by animation {
 
     @JvmOverloads
@@ -27,17 +27,6 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
 
     init {
         animation.bindView(this)
-        holder.addCallback(object : SurfaceHolder.Callback {
-
-            override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
-            }
-
-            override fun surfaceDestroyed(holder: SurfaceHolder?) {
-            }
-
-            override fun surfaceCreated(holder: SurfaceHolder?) {
-            }
-        })
     }
 
     override fun onDetachedFromWindow() {

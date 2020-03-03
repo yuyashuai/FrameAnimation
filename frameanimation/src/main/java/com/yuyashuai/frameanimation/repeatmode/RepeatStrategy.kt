@@ -13,10 +13,15 @@ import com.yuyashuai.frameanimation.FrameAnimation
  */
 interface RepeatStrategy {
     /**
-     * normally, this method will be called automatically
+     * this method will be called automatically
      * so just get the paths data then return it in the getNextFrameResource() method
      */
     fun setPaths(list: MutableList<FrameAnimation.PathData>)
+
+    /**
+     * when animation stops, clear the path data for GC
+     */
+    fun clear()
 
     /**
      * get the next frame bitmap path
@@ -30,5 +35,5 @@ interface RepeatStrategy {
      * use for progress listener
      * @see FrameAnimation.animationListener
      */
-    fun getTotalFrames():Int
+    fun getTotalFrames(): Int
 }

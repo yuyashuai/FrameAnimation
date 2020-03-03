@@ -6,8 +6,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.yuyashuai.frameanimationmaster.JavaActivity">
-    <com.yuyashuai.frameanimation.FrameAnimationSurfaceView
+    <com.yuyashuai.frameanimation.FrameAnimationView
             android:id="@+id/fsv_java_main"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
+    <Button
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="20dp"
+            android:text="播放"
+            android:id="@+id/btn_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
