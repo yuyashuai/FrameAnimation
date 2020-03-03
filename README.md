@@ -58,7 +58,7 @@ animationView.playAnimationFromAssets("zone720p")
 
 通过调用`playAnimation(paths: MutableList<FrameAnimation.PathData>)`方法实现自定义资源的播放。
 
-例：讲assets中多个目录的动画合并为一个播放
+例：将assets中多个目录的动画合并为一个播放
 
 ```kotlin
 val paths = FrameAnimationUtil.getPathList(applicationContext, "zone720p", "traffic720p")
@@ -88,10 +88,9 @@ animationView.playAnimation(paths)
    **往复一次：** 播放顺序1, 2, 3, 4, 5, 4, 3, 2, 1
 
 5. `animationView.setRepeatMode(RepeatTail(3))`
-
-   **尾部循环：** 播放顺序1, 2, 3, 4, 3, 4, 5, 3, 4, 5...
-
    从指定帧开始循环播放
+
+   **尾部循环：** 播放顺序1, 2, 3, 4, 5, 3, 4, 5, 3, 4, 5...
 
 > 由于没有对传入文件夹中的非图片文件进行过滤，所有请保证传入文件夹内皆为有效图片，否则会造成crash。
 
