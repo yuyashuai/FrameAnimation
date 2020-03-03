@@ -73,23 +73,23 @@ animationView.playAnimation(paths)
 
 1. `animationView.setRepeatMode(FrameAnimation.RepeatMode.INFINITE)`
 
-   **重复播放：**播放顺序：1, 2, 3, 4, 5, 1, 2, 3, 4, 5...
+   **重复播放：** 播放顺序：1, 2, 3, 4, 5, 1, 2, 3, 4, 5...
 
 2. `animationView.setRepeatMode(FrameAnimation.RepeatMode.ONCE)`
 
-   **单次播放：**播放顺序：1, 2, 3, 4, 5
+   **单次播放：** 播放顺序：1, 2, 3, 4, 5
 
 3. `animationView.setRepeatMode(FrameAnimation.RepeatMode.REVERSE_INFINITE)`
 
-   **往复循环：**播放顺序1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5...
+   **往复循环：** 播放顺序1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5...
 
 4. `animationView.setRepeatMode(FrameAnimation.RepeatMode.REVERSE_ONCE)`
 
-   **往复一次：**播放顺序1, 2, 3, 4, 5, 4, 3, 2, 1
+   **往复一次：** 播放顺序1, 2, 3, 4, 5, 4, 3, 2, 1
 
 5. `animationView.setRepeatMode(RepeatTail(3))`
 
-   **尾部循环：**播放顺序1, 2, 3, 4, 3, 4, 5, 3, 4, 5...
+   **尾部循环：** 播放顺序1, 2, 3, 4, 3, 4, 5, 3, 4, 5...
 
    从指定帧开始循环播放
 
