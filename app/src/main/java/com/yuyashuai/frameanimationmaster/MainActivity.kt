@@ -2,13 +2,14 @@ package com.yuyashuai.frameanimationmaster
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Debug
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.yuyashuai.frameanimation.FrameAnimation
-import kotlinx.android.synthetic.main.activity_kotlin.*
-import kotlinx.android.synthetic.main.activity_test.*
+import com.yuyashuai.frameanimation.repeatmode.RepeatTail
+import kotlinx.android.synthetic.main.activity_mian.*
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, FrameAnimation.FrameAnimationListener, SeekBar.OnSeekBarChangeListener {
 
@@ -28,13 +29,14 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Fr
             listOf("REVERSE_ONCE",
                     "REVERSE_INFINITE",
                     "INFINITE",
+                    "REPEAT_TAIL(10)",
                     "ONCE")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        setContentView(R.layout.activity_kotlin)
+        setContentView(R.layout.activity_mian)
         acs_repeat_mode.adapter = ArrayAdapter(this, R.layout.spinner_text_view, repeatModes)
         acs_resource.adapter = ArrayAdapter(this, R.layout.spinner_text_view, resources)
         acs_scale_type.adapter = ArrayAdapter(this, R.layout.spinner_text_view, scaleTypes)
@@ -45,25 +47,21 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Fr
         sb_frame_interval.max = 300
         sb_frame_interval.setOnSeekBarChangeListener(this)
         animationView.setAnimationListener(this)
-        animationView.freezeLastFrame(true)
         btn_start.setOnClickListener {
-            //animationView.stopAnimation()
             animationView.playAnimationFromAssets((acs_resource.selectedView as TextView).text.toString())
         }
 
         btn_stop.setOnClickListener {
             animationView.stopAnimation()
         }
-
     }
 
     override fun onAnimationStart() {
-        //Toast.makeText(applicationContext, "onAnimationStart", Toast.LENGTH_SHORT).show()
+        Toast.makeText(applicationContext, "onAnimationStart", Toast.LENGTH_SHORT).show()
     }
 
     override fun onAnimationEnd() {
-        //Toast.makeText(applicationContext, "onAnimationEnd", Toast.LENGTH_SHORT).show()
-        println("onAnimationEnd-----------")
+        Toast.makeText(applicationContext, "onAnimationEnd", Toast.LENGTH_SHORT).show()
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -88,6 +86,10 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Fr
                 animationView.setScaleType(scaleType)
             }
             R.id.acs_repeat_mode -> {
+                if (text == "REPEAT_TAIL(10)") {
+                    animationView.setRepeatMode(RepeatTail(10))
+                    return
+                }
                 val repeatMode = when (text) {
                     "REVERSE_ONCE" -> FrameAnimation.RepeatMode.REVERSE_ONCE
                     "REVERSE_INFINITE" -> FrameAnimation.RepeatMode.REVERSE_INFINITE

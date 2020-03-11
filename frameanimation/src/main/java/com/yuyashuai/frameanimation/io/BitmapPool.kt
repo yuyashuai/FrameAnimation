@@ -5,12 +5,12 @@ import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
 
 /**
  * @author yuyashuai   2019-04-24.
- * a pool store the bitmaps resident in memory
+ * a pool store and reuse the bitmaps resident in memory
  */
 interface BitmapPool {
     /**
-     * take an bitmap from the pool，maybe a blacking method
-     * don't allocate objects in this method
+     * take an bitmap from the pool
+     * don't allocate objects here
      * @return null a animation stop signal
      */
     @Throws(InterruptedException::class)
@@ -26,6 +26,11 @@ interface BitmapPool {
      * recycler the bitmap for reuse
      */
     fun recycle(bitmap: Bitmap)
+
+    /**
+     * stop decode bitmap
+      */
+    fun stop()
 
     /**
      * release all resources, like thread, bitmap...

@@ -99,7 +99,7 @@ interface AnimationController {
      * set the frame interval between two frames
      * @param frameInterval unit millisecond
      */
-    fun setFrameInterval( frameInterval: Int)
+    fun setFrameInterval(frameInterval: Int)
 
     /**
      * get the frame interval between two frames
@@ -125,4 +125,6 @@ interface AnimationController {
     fun setAnimationListener(listener: FrameAnimation.FrameAnimationListener)
 
     fun setBitmapPool(bitmapPool: BitmapPool)
+
+    fun getBitmapPool(): BitmapPool
 }

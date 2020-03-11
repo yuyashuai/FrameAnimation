@@ -92,7 +92,7 @@ animationView.playAnimation(paths)
 
    **尾部循环：** 播放顺序1, 2, 3, 4, 5, 3, 4, 5, 3, 4, 5...
 
-> 由于没有对传入文件夹中的非图片文件进行过滤，所有请保证传入文件夹内皆为有效图片，否则会造成crash。
+> 由于没有对传入文件夹中的非图片文件进行过滤，请保证传入文件夹内皆为有效图片，否则会造成crash。
 
 #### 其它设置
 
@@ -100,7 +100,7 @@ animationView.playAnimation(paths)
 
 `animationView.setScaleType()`
 
-参考`ImageView`的缩放模式，该设置播放中立即生效。
+参考`ImageView`的缩放模式，该设置播放中立即生效，也可以通过`setMatrix(matrix)`直接设置变换矩阵。
 
 ##### 设置帧间隔
 

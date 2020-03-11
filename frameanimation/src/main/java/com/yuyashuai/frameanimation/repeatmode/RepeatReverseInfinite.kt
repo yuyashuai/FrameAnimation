@@ -13,8 +13,10 @@ class RepeatReverseInfinite : RepeatStrategy {
     override fun setPaths(list: MutableList<FrameAnimation.PathData>) {
         reversePaths = list.toMutableList().asReversed()
         paths = list.toMutableList()
-        reversePaths.removeAt(reversePaths.size - 1)
-        paths.removeAt(paths.size - 1)
+        if (list.isNotEmpty()) {
+            reversePaths.removeAt(reversePaths.size - 1)
+            paths.removeAt(paths.size - 1)
+        }
     }
 
     override fun clear() {

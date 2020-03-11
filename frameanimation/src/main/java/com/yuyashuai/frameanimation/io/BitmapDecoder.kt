@@ -11,7 +11,7 @@ interface BitmapDecoder {
 
     /**
      * decoding the bitmap from the specified path
-     * don't allocate objects in this method
+     * don't allocate objects here
      * @param path the bitmap path
      * @param inBitmap the reuse bitmap
      * @return null when decode fails

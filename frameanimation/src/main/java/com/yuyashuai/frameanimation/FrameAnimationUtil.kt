@@ -18,6 +18,7 @@ object FrameAnimationUtil {
      * @param assetsPath assets resource path, must be a directory
      * @return if assets does not exist return a empty list
      */
+    @JvmStatic
     fun getPathList(context: Context, assetsPath: String): MutableList<FrameAnimation.PathData> {
         val assetManager = context.assets
         try {
@@ -38,6 +39,7 @@ object FrameAnimationUtil {
         return mutableListOf()
     }
 
+    @JvmStatic
     fun getPathList(context: Context, vararg assetsPaths: String): MutableList<FrameAnimation.PathData> {
         return assetsPaths.flatMap {
             getPathList(context, it)
@@ -50,6 +52,7 @@ object FrameAnimationUtil {
      * @param file the resources directory
      * @return if file does not exist return a empty list
      */
+    @JvmStatic
     fun getPathList(file: File?): MutableList<FrameAnimation.PathData> {
         val list = mutableListOf<FrameAnimation.PathData>()
         if (file != null) {
@@ -67,6 +70,7 @@ object FrameAnimationUtil {
         return list
     }
 
+    @JvmStatic
     fun getPathList(vararg files: File): MutableList<FrameAnimation.PathData> {
         return files.flatMap {
             getPathList(it)

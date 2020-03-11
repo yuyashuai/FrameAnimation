@@ -42,6 +42,7 @@ open class FrameAnimation private constructor(
     private val TAG = javaClass.simpleName
 
     private var mBitmapPool: BitmapPool
+
     /**
      * Indicates whether the animation is playing
      */
@@ -145,7 +146,6 @@ open class FrameAnimation private constructor(
      */
     override fun playAnimationFromAssets(assetsPath: String) = playAnimationFromAssets(assetsPath, 0)
 
-
     /**
      * play animation from a file directory path
      * @param filePath must be a directory
@@ -217,11 +217,15 @@ open class FrameAnimation private constructor(
         }
         isPlaying = false
         drawThread?.interrupt()
-        mBitmapPool.release()
+        mBitmapPool.stop()
         mPaths = null
         mRepeatStrategy.clear()
         animationListener?.onAnimationEnd()
         return drawIndex
+    }
+
+    override fun getBitmapPool(): BitmapPool {
+        return mBitmapPool
     }
 
     private fun draw() {
@@ -315,6 +319,7 @@ open class FrameAnimation private constructor(
             RepeatMode.REVERSE_INFINITE -> RepeatReverseInfinite()
             else -> RepeatOnce()
         }
+        mRepeatStrategy.setPaths(mutableListOf())
     }
 
     /**
@@ -322,6 +327,7 @@ open class FrameAnimation private constructor(
      */
     override fun setRepeatMode(repeatStrategy: RepeatStrategy) {
         mRepeatStrategy = repeatStrategy
+        mRepeatStrategy.setPaths(mutableListOf())
     }
 
     private val MATRIX_SCALE_ARRAY =
@@ -335,6 +341,7 @@ open class FrameAnimation private constructor(
     private var lastSrcHeight = 0
     private var lastDstHeight = 0
     private var lastScaleType: ScaleType? = null
+
     /**
      * 根据ScaleType配置绘制bitmap的Matrix
      *
@@ -492,8 +499,13 @@ open class FrameAnimation private constructor(
     }
 
     companion object {
+        @JvmStatic
         val PATH_FILE = 0x00
+
+        @JvmStatic
         val PATH_ASSETS = 0x01
+
+        @JvmStatic
         val FRAMES_INFINITE = -0x01
     }
 

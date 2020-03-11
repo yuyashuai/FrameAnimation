@@ -36,7 +36,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
     /**
      * the decode thread pool
      */
-    private var mDecodeThreadPool: ThreadPoolExecutor? = null
+    private val mDecodeThreadPool: ThreadPoolExecutor
 
     /**
      * current bitmap index
@@ -50,22 +50,37 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
     @Volatile
     private var state = IDLE
 
-    private var skipInBitmapCount = 5
+    private val skipInBitmapCount: Int
+
+    /**
+     * permit to access animation
+     */
+    private val permit = Semaphore(1)
+
+    /**
+     * the bitmap decoder for every single thread
+     */
+    private var decoders: ThreadLocal<BitmapDecoder>? = null
 
     private val tempMap = ConcurrentHashMap<Int, Bitmap?>()
-    private var decoders: ThreadLocal<BitmapDecoderImpl>? = null
+
     private val workQueue: BlockingQueue<Runnable>
-    private val permit = Semaphore(1)
+
     private val TAG = javaClass.simpleName
+
+    private val mCountDownLatch = ReusableCountDownLatch()
 
     init {
         val cpuCount = Runtime.getRuntime().availableProcessors()
         poolSize = min(cpuCount, 4)
         mPool = LinkedBlockingQueue(poolSize)
         mInBitmapPool = LinkedBlockingQueue(poolSize)
-        val ac = AtomicInteger()
         workQueue = ArrayBlockingQueue(poolSize * 2)
-        //todo 停止播放后，立即退出会造成10s的内存泄露
+        skipInBitmapCount = poolSize
+        val ac = AtomicInteger()
+        //停止播放,退出界面后，线程池中线程依旧会存活10s
+        //如果要立即退出可以在onDestroy等生命周期手动调用release方法
+        //todo view销毁时 shutdown线程池
         mDecodeThreadPool =
                 ThreadPoolExecutor(0, poolSize, 10,
                         TimeUnit.SECONDS, workQueue, ThreadFactory {
@@ -75,7 +90,9 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
     }
 
     override fun start(repeatStrategy: RepeatStrategy, index: Int) {
-
+        if (mDecodeThreadPool.isShutdown) {
+            throw IllegalStateException("can't start animation after release")
+        }
         //if the pool is running normally, relay to play
         if (state == WORKING) {
             relay(repeatStrategy)
@@ -121,10 +138,11 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
             mIndex.set(0)
             restartNextDecode = false
         }
-        val mCountDownLatch = CountDownLatch(poolSize)
+        //val mCountDownLatch = CountDownLatch(poolSize)
+        mCountDownLatch.count = poolSize
         for (i in 0 until poolSize) {
             try {
-                mDecodeThreadPool!!.execute {
+                mDecodeThreadPool.execute {
                     try {
                         val index = mIndex.getAndIncrement()
                         decoders ?: return@execute
@@ -136,7 +154,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
                         val path = mRepeatStrategy?.getNextFrameResource(index)
                         //stop animation
                         if (path == null) {
-                            release()
+                            stop()
                             return@execute
                         }
                         val bitmap = decoder.decodeBitmap(path, mInBitmapPool.poll()?.get())
@@ -156,8 +174,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
     }
 
     /**
-     * clear the resource
-     * call this method When all the threads stop
+     * clear the resource after animation stop
      */
     private fun clearAndStop() {
         mPool.clear()
@@ -199,13 +216,18 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
         return mRepeatStrategy
     }
 
-    override fun release() {
-        //start stopping
+    override fun stop() {
         if (state != WORKING) {
             return
         }
+        //start stopping
         dispatcherThread?.interrupt()
         state = STOPPING
         workQueue.clear()
+    }
+
+    override fun release() {
+        stop()
+        mDecodeThreadPool.shutdownNow()
     }
 }
