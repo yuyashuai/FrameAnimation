@@ -105,7 +105,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
         val success = permit.tryAcquire(100, TimeUnit.MILLISECONDS)
         if (!success) {
             Log.e(TAG, "start failed, get acquire took too long time")
-            release()
+            stop()
             return
         }
         state = WORKING

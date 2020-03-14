@@ -3,6 +3,7 @@ package com.yuyashuai.frameanimationmaster
 import android.content.Intent
 import android.os.Bundle
 import android.os.Debug
+import android.view.Choreographer
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
@@ -54,6 +55,10 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Fr
         btn_stop.setOnClickListener {
             animationView.stopAnimation()
         }
+        Choreographer.getInstance().postFrameCallback {
+            println("doFrame:$it")
+        }
+        Choreographer.getInstance().postFrameCallbackDelayed()
     }
 
     override fun onAnimationStart() {
