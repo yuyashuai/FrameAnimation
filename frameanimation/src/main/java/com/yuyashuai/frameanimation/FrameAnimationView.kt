@@ -1,9 +1,11 @@
 package com.yuyashuai.frameanimation
 
 import android.content.Context
+import android.graphics.SurfaceTexture
 import android.util.AttributeSet
 import android.view.TextureView
 import android.view.View
+import kotlin.properties.Delegates
 
 /**
  * the frame animation view to handle the animation life circle
@@ -17,51 +19,42 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
     constructor(context: Context, attributeSet: AttributeSet? = null, defStyle: Int = 0)
             : this(context, attributeSet, defStyle, FrameAnimation(context))
 
-    private var lastStopIndex = 0
-    private var lastStopPaths: MutableList<FrameAnimation.PathData>? = null
-
-    /**
-     * whether to resume playback
-     */
-    var restoreEnable = true
+    private val lifeCircleHandler: LifeCircleHandler
 
     init {
         animation.bindView(this)
+        lifeCircleHandler = LifeCircleHandler(animation)
     }
+
+    var restoreEnable: Boolean
+        get() {
+            return lifeCircleHandler.restoreEnable
+        }
+        set(value) {
+            lifeCircleHandler.restoreEnable = value
+        }
 
     override fun onDetachedFromWindow() {
+        lifeCircleHandler.release()
         super.onDetachedFromWindow()
-        saveAndStop()
+    }
+
+    fun onResume() {
+        lifeCircleHandler.resume()
     }
 
     /**
-     * stop the animation, save the index when the animation stops playing
+     * bind animation's life circle with activity or fragment...
+     * do it or crash
+     *
+     *  override fun onPause() {
+     *    animation.onPause()
+     *    super.onPause()
+     *  }
+     *
      */
-    private fun saveAndStop() {
-        lastStopPaths = animation.mPaths?.toMutableList()
-        lastStopIndex = stopAnimation()
+    fun onPause() {
+        lifeCircleHandler.pause()
     }
 
-    /**
-     * resume animation
-     */
-    private fun restoreAndStart() {
-        if (lastStopPaths != null && restoreEnable) {
-            playAnimation(lastStopPaths!!, lastStopIndex)
-        }
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        restoreAndStart()
-    }
-
-    override fun onVisibilityChanged(changedView: View, visibility: Int) {
-        super.onVisibilityChanged(changedView, visibility)
-        if (visibility == View.GONE || visibility == View.INVISIBLE) {
-            saveAndStop()
-        } else if (visibility == View.VISIBLE) {
-            restoreAndStart()
-        }
-    }
 }

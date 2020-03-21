@@ -17,6 +17,7 @@ import com.yuyashuai.frameanimation.io.BitmapPool
 import com.yuyashuai.frameanimation.io.BitmapPoolImpl
 import com.yuyashuai.frameanimation.repeatmode.*
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
@@ -64,6 +65,18 @@ open class FrameAnimation private constructor(
 
     private var mRepeatStrategy: RepeatStrategy = RepeatOnce()
 
+    private var temporaryStopSignal = AtomicInteger(0)
+
+    @Volatile
+    var temporaryStop = false
+        set(value) {
+            if (value) {
+                temporaryStopSignal.set(2)
+            }
+            println("set temporaryStop:$value")
+            field = value
+        }
+
     /**
      * Whether to clear the view when the animation finished
      * if false the view will display the last frame
@@ -108,6 +121,15 @@ open class FrameAnimation private constructor(
 
     override fun setFrameInterval(frameInterval: Int) {
         this.frameInterval = frameInterval.coerceAtLeast(0)
+    }
+
+    private fun mayResetTemporaryStopSignal() {
+        if (!temporaryStop) {
+            return
+        }
+        if (temporaryStopSignal.decrementAndGet() == 0) {
+            temporaryStop = false
+        }
     }
 
     /**
@@ -220,7 +242,10 @@ open class FrameAnimation private constructor(
         mBitmapPool.stop()
         mPaths = null
         mRepeatStrategy.clear()
-        animationListener?.onAnimationEnd()
+        if (!temporaryStop) {
+            animationListener?.onAnimationEnd()
+        }
+        mayResetTemporaryStopSignal()
         return drawIndex
     }
 
@@ -230,11 +255,10 @@ open class FrameAnimation private constructor(
 
     private fun draw() {
         mHandler.sendEmptyMessage(MSG_ANIMATION_START)
-        drawThread = thread(start = true) {
-            //todo don't allocate objects here
+        drawThread = thread(start = true, name = "FA-DrawThread") {
             var drawing = true
             try {
-                while (isPlaying && drawing) {
+                while (isPlaying && drawing && !Thread.currentThread().isInterrupted) {
                     val startTime = SystemClock.uptimeMillis()
                     val bitmap = mBitmapPool.take()
                     if (bitmap == null) {
@@ -280,9 +304,10 @@ open class FrameAnimation private constructor(
                 Thread.currentThread().interrupt()
             }
 
-            if (!freezeLastFrame) {
+            if (!freezeLastFrame || !temporaryStop) {
                 mBitmapDrawer.clear()
             }
+            mayResetTemporaryStopSignal()
             if (relayDraw) {
                 draw()
                 relayDraw = false
@@ -421,6 +446,11 @@ open class FrameAnimation private constructor(
          * @param totalFrames the total frames of the animation, -1 if the animation played infinitely
          */
         fun onProgress(progress: Float, frameIndex: Int, totalFrames: Int)
+    }
+
+    override fun release() {
+        stopAnimation()
+        mBitmapPool.release()
     }
 
     private var animationListener: FrameAnimationListener? = null

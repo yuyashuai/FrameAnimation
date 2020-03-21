@@ -72,21 +72,19 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
 
     init {
         val cpuCount = Runtime.getRuntime().availableProcessors()
-        poolSize = min(cpuCount, 4)
+        poolSize = min(cpuCount-1, 4).coerceAtLeast(2)
         mPool = LinkedBlockingQueue(poolSize)
         mInBitmapPool = LinkedBlockingQueue(poolSize)
         workQueue = ArrayBlockingQueue(poolSize * 2)
         skipInBitmapCount = poolSize
         val ac = AtomicInteger()
-        //停止播放,退出界面后，线程池中线程依旧会存活10s
-        //如果要立即退出可以在onDestroy等生命周期手动调用release方法
-        //todo view销毁时 shutdown线程池
         mDecodeThreadPool =
-                ThreadPoolExecutor(0, poolSize, 10,
+                ThreadPoolExecutor(poolSize, poolSize, 30,
                         TimeUnit.SECONDS, workQueue, ThreadFactory {
                     return@ThreadFactory Thread(it).apply { name = "FA-${ac.getAndIncrement()}DecodeThread" }
-                })
-
+                }).apply {
+                    allowCoreThreadTimeOut(true)
+                }
     }
 
     override fun start(repeatStrategy: RepeatStrategy, index: Int) {

@@ -16,6 +16,9 @@ class SurfaceViewBitmapDrawer(surfaceView: SurfaceView) : BitmapDrawer {
     }
 
     override fun draw(bitmap: Bitmap, matrix: Matrix): Canvas? {
+        if (Thread.currentThread().isInterrupted) {
+            return null
+        }
         val canvas = mSurfaceHolder.lockCanvas() ?: return null
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         canvas.drawBitmap(bitmap, matrix, null)

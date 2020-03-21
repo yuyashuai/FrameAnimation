@@ -13,18 +13,18 @@
 1. project gradle
 
 ```groovy
-...
+//...
     repositories {
-        ...
+        //...
         jcenter()
     }
-...
+//...
 ```
 
 2. module gradle
 
 ```groovy
- implementation 'com.yuyashuai.frameanimation:frameanimation:2.3.0'
+ implementation 'com.yuyashuai.frameanimation:frameanimation:2.3.1'
 ```
 
 ### usage
@@ -33,19 +33,35 @@
 
 ```xml
  <com.yuyashuai.frameanimation.FrameAnimationView
-        android:id="@+id/animationView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+    android:id="@+id/animationView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>
 ```
+
+**务必将`AnimationView`的生命周期与所在的`Activity`或`Fragment`绑定**
+
+````kotlin
+ override fun onPause() {
+    animationView.onPause()
+    super.onPause()
+ }
+
+ override fun onResume() {
+    super.onResume()
+    animationView.onResume()
+ }
+````
+
+> 不绑定，在播放的过程中进行页面跳转，可能会导致crash。
 
 #### 动画播放
 
 ##### 1. 从文件夹中读取
 
-```kotlin
+````kotlin
 //传入文件路径
 animationView.playAnimationFromFile("zone720p")
-```
+````
 
 ##### 2. 从assets目录中读取
 
@@ -144,7 +160,8 @@ animationView.playAnimation(paths)
 
 ### 注意事项
 
-* 不要在 RecyclerView 或者 ListView 中使用
+* 暂时没有对RecyclerView或者 ListView 进行兼容。**不要在 RecyclerView 或者 ListView 中使用**
+* **务必将`AnimationView`的生命周期与所在的`Activity`或`Fragment`绑定**
 
 ### TextureView or SurfaceView
 

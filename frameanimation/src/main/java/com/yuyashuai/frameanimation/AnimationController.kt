@@ -80,6 +80,13 @@ interface AnimationController {
      */
     fun stopAnimation(): Int
 
+
+    /**
+     * release all resources
+     */
+    fun release()
+
+
     /**
      * @return Whether the animation is playing
      */

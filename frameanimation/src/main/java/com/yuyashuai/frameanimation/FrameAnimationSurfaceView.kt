@@ -11,57 +11,48 @@ import android.view.View
  * @see SurfaceView
  * @author yuyashuai   2019-05-16.
  */
-class FrameAnimationSurfaceView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int,private val animation: FrameAnimation)
+class FrameAnimationSurfaceView private constructor(context: Context, attributeSet: AttributeSet?, defStyle: Int, private val animation: FrameAnimation)
     : SurfaceView(context, attributeSet, defStyle), AnimationController by animation {
 
     @JvmOverloads
     constructor(context: Context, attributeSet: AttributeSet? = null, defStyle: Int = 0)
             : this(context, attributeSet, defStyle, FrameAnimation(context))
 
-    private var lastStopIndex = 0
-    private var lastStopPaths: MutableList<FrameAnimation.PathData>? = null
-    /**
-     * whether to resume playback
-     */
-    var restoreEnable = true
+    private val lifeCircleHandler: LifeCircleHandler
+    var restoreEnable: Boolean
+        get() {
+            return lifeCircleHandler.restoreEnable
+        }
+        set(value) {
+            lifeCircleHandler.restoreEnable = value
+        }
 
     init {
         animation.bindView(this)
+        lifeCircleHandler = LifeCircleHandler(animation)
+    }
+
+    fun onResume() {
+        lifeCircleHandler.resume()
+    }
+
+    /**
+     * bind animation's life circle with activity or fragment...
+     * do it or crash
+     *
+     *  override fun onPause() {
+     *    animation.onPause()
+     *    super.onPause()
+     *  }
+     *
+     */
+    fun onPause() {
+        lifeCircleHandler.pause()
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        saveAndStop()
+        lifeCircleHandler.release()
     }
 
-    /**
-     * stop the animation, save the index when the animation stops playing
-     */
-    private fun saveAndStop() {
-        lastStopPaths = animation.mPaths
-        lastStopIndex = stopAnimation()
-    }
-
-    /**
-     * resume animation
-     */
-    private fun restoreAndStart() {
-        if (lastStopPaths != null && restoreEnable) {
-            playAnimation(lastStopPaths!!, lastStopIndex)
-        }
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        restoreAndStart()
-    }
-
-    override fun onVisibilityChanged(changedView: View, visibility: Int) {
-        super.onVisibilityChanged(changedView, visibility)
-        if (visibility == View.GONE || visibility == View.INVISIBLE) {
-            saveAndStop()
-        } else if (visibility == View.VISIBLE) {
-            restoreAndStart()
-        }
-    }
 }

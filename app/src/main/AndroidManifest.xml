@@ -13,8 +13,9 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".SecondActivity"></activity>
-        <activity android:name=".TestActivity"></activity>
+        <activity
+                android:name=".SecondActivity"
+                android:screenOrientation="landscape"></activity>
         <activity
                 android:name=".MainActivity"
                 android:launchMode="singleTop"

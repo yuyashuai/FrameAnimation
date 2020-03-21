@@ -55,18 +55,16 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Fr
         btn_stop.setOnClickListener {
             animationView.stopAnimation()
         }
-        Choreographer.getInstance().postFrameCallback {
-            println("doFrame:$it")
+        btn_jump.setOnClickListener {
+            startActivity(Intent(this, SecondActivity::class.java))
         }
-        Choreographer.getInstance().postFrameCallbackDelayed()
+
     }
 
     override fun onAnimationStart() {
-        Toast.makeText(applicationContext, "onAnimationStart", Toast.LENGTH_SHORT).show()
     }
 
     override fun onAnimationEnd() {
-        Toast.makeText(applicationContext, "onAnimationEnd", Toast.LENGTH_SHORT).show()
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -109,8 +107,17 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Fr
         }
     }
 
+    override fun onPause() {
+        animationView.onPause()
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        animationView.onResume()
+    }
+
     override fun onProgress(progress: Float, frameIndex: Int, totalFrames: Int) {
-        //println("progress:$progress  frameIndex:$frameIndex  totalFrames:$totalFrames")
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

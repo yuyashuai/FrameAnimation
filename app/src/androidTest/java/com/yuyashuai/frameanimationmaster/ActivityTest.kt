@@ -1,6 +1,7 @@
 package com.yuyashuai.frameanimationmaster
 
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.rule.ActivityTestRule
@@ -13,15 +14,14 @@ import org.junit.runner.RunWith
  * @author yuyashuai   2019-05-30.
  */
 @RunWith(AndroidJUnit4::class)
-class TestActivityTest {
+class ActivityTest {
     @get:Rule
-    val mainRule = ActivityTestRule<TestActivity>(TestActivity::class.java)
+    val mainRule = ActivityTestRule(MainActivity::class.java)
 
     @Test
     fun fastClick() {
         repeat(1000) {
             onView(withId(R.id.btn1_test)).perform(click())
-            //Thread.sleep(20)
             if (it % 10 == 0) {
                 Thread.sleep(2000)
             }
@@ -32,6 +32,19 @@ class TestActivityTest {
             if (it % 10 == 2) {
                 onView(withId(R.id.btn3_test)).perform(click())
             }
+        }
+    }
+
+    /**
+     * #issue 34
+     */
+    @Test
+    fun jump100000(){
+        repeat(100000){
+            onView(withId(R.id.btn_start)).perform(click())
+            onView(withId(R.id.btn_jump)).perform(click())
+            Thread.sleep(1000)
+            pressBack()
         }
     }
 }

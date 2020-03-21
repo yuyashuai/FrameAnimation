@@ -13,8 +13,9 @@ class SecondActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_second)
+        fav_second.playAnimationFromAssets("zone720p")
         btn_action_second.setOnClickListener {
-            fav_second.playAnimationFromAssets("zone720p")
+
         }
     }
 
@@ -22,4 +23,16 @@ class SecondActivity : AppCompatActivity() {
         super.onWindowFocusChanged(hasFocus)
         //Debug.stopMethodTracing()
     }
+
+    override fun onPause() {
+        fav_second.onPause()
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fav_second.onResume()
+    }
+
 }
+

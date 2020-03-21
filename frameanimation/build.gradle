@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 10
-        versionName "2.3.0"
+        versionCode 11
+        versionName "2.3.1"
     }
     buildTypes {
         release {
@@ -21,6 +21,8 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
 apply plugin: 'com.github.dcendents.android-maven'
@@ -31,7 +33,7 @@ def gitUrl = 'https://github.com/yuyashuai/FrameAnimation.git' // project git
 
 group = "com.yuyashuai.frameanimation"
 def libName = "FrameAnimation"
-version = "2.3.0"
+version = "2.3.1"
 
 install {
     repositories.mavenInstaller {

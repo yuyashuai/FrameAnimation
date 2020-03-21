@@ -6,8 +6,7 @@ import android.view.TextureView
 /**
  * @author yuyashuai   2019-05-05.
  */
-class TextureBitmapDrawer(textureView: TextureView) : BitmapDrawer {
-    private val mTextureView = textureView
+class TextureBitmapDrawer(private val mTextureView: TextureView) : BitmapDrawer {
 
     init {
         mTextureView.isOpaque = false
@@ -17,6 +16,9 @@ class TextureBitmapDrawer(textureView: TextureView) : BitmapDrawer {
     }
 
     override fun draw(bitmap: Bitmap, matrix: Matrix): Canvas? {
+        if(Thread.currentThread().isInterrupted){
+            return null
+        }
         val canvas = mTextureView.lockCanvas() ?: return null
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         canvas.drawBitmap(bitmap, matrix, null)
