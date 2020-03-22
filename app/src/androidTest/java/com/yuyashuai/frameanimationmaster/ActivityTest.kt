@@ -21,16 +21,13 @@ class ActivityTest {
     @Test
     fun fastClick() {
         repeat(1000) {
-            onView(withId(R.id.btn1_test)).perform(click())
+            onView(withId(R.id.btn_start)).perform(click())
             if (it % 10 == 0) {
                 Thread.sleep(2000)
             }
-            onView(withId(R.id.btn2_test)).perform(click())
+            onView(withId(R.id.btn_stop)).perform(click())
             if (it % 10 == 1) {
                 Thread.sleep(2000)
-            }
-            if (it % 10 == 2) {
-                onView(withId(R.id.btn3_test)).perform(click())
             }
         }
     }
