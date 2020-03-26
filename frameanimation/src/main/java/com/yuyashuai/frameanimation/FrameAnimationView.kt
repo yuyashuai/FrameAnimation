@@ -1,10 +1,12 @@
 package com.yuyashuai.frameanimation
 
+import android.app.Dialog
 import android.content.Context
 import android.graphics.SurfaceTexture
 import android.util.AttributeSet
 import android.view.TextureView
 import android.view.View
+import android.widget.PopupWindow
 import kotlin.properties.Delegates
 
 /**
@@ -34,8 +36,18 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
             lifeCircleHandler.restoreEnable = value
         }
 
+    /**
+     * Whether to release animation in [onDetachedFromWindow].
+     * If your animation plays in [android.app.Dialog] or [android.widget.PopupWindow],
+     * you should set it false, otherwise, playing animation again will throw
+     * IllegalStateException after the window dismiss.
+     */
+    var autoRelease = true
+
     override fun onDetachedFromWindow() {
-        lifeCircleHandler.release()
+        if (autoRelease) {
+            lifeCircleHandler.release()
+        }
         super.onDetachedFromWindow()
     }
 

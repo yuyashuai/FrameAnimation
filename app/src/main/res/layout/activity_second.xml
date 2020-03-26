@@ -6,7 +6,7 @@
         android:layout_height="match_parent"
         tools:context="com.yuyashuai.frameanimationmaster.SecondActivity">
 
-    <com.yuyashuai.frameanimation.FrameAnimationView
+    <com.yuyashuai.frameanimation.FrameAnimationSurfaceView
             android:id="@+id/fav_second"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -19,9 +19,9 @@
             android:id="@+id/btn_action_second"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="16dp"
             android:text="action"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

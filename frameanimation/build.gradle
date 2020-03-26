@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 11
-        versionName "2.3.1"
+        versionCode animation_version_code
+        versionName animation_version_name
     }
     buildTypes {
         release {
@@ -33,7 +33,7 @@ def gitUrl = 'https://github.com/yuyashuai/FrameAnimation.git' // project git
 
 group = "com.yuyashuai.frameanimation"
 def libName = "FrameAnimation"
-version = "2.3.1"
+version = animation_version_name
 
 install {
     repositories.mavenInstaller {

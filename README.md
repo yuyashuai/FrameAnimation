@@ -24,7 +24,7 @@
 2. module gradle
 
 ```groovy
- implementation 'com.yuyashuai.frameanimation:frameanimation:2.3.1'
+ implementation 'com.yuyashuai.frameanimation:frameanimation:2.3.2'
 ```
 
 ### usage
@@ -160,12 +160,13 @@ animationView.playAnimation(paths)
 
 ### 注意事项
 
-* 暂时没有对RecyclerView或者 ListView 进行兼容。**不要在 RecyclerView 或者 ListView 中使用**
+* 不兼容`RecyclerView`或者`ListView`进行兼容。**不要在`RecyclerView`或者`ListView`中使用**
 * **务必将`AnimationView`的生命周期与所在的`Activity`或`Fragment`绑定**
+* 如果在`Dialog`或`PopupWindow`等拥有单独`window`的容器中播放，需设置`animationView.autoRelease=false`，以保证`dismiss`后可以再次播放。
 
 ### TextureView or SurfaceView
 
-[TextureView](https://developer.android.com/reference/android/view/TextureView)必须运行在支持硬件加速的上，与[SurfaceView](https://developer.android.com/reference/android/view/SurfaceView) 不同，不会单独创建 window，因此可以和常规 View 进行变换等操作，更多请参考官方[Wiki](https://developer.android.com/reference/android/view/TextureView).
+[TextureView](https://developer.android.com/reference/android/view/TextureView)必须运行在支持硬件加速的上，与[SurfaceView](https://developer.android.com/reference/android/view/SurfaceView) 不同，可以和常规View进行变换等操作，更多请参考官方[Wiki](https://developer.android.com/reference/android/view/TextureView).
 
 ### issue
 

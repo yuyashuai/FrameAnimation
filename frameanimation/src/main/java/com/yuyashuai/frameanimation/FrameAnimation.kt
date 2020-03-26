@@ -73,7 +73,6 @@ open class FrameAnimation private constructor(
             if (value) {
                 temporaryStopSignal.set(2)
             }
-            println("set temporaryStop:$value")
             field = value
         }
 

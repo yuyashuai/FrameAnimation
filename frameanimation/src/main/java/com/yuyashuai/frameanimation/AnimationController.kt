@@ -82,7 +82,8 @@ interface AnimationController {
 
 
     /**
-     * release all resources
+     * release the [BitmapPool]'s ThreadPool, you can't play animation after release
+     *
      */
     fun release()
 

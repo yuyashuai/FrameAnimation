@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
+import java.lang.Exception
 import java.lang.ref.WeakReference
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -72,7 +73,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
 
     init {
         val cpuCount = Runtime.getRuntime().availableProcessors()
-        poolSize = min(cpuCount-1, 4).coerceAtLeast(2)
+        poolSize = min(cpuCount - 1, 4).coerceAtLeast(2)
         mPool = LinkedBlockingQueue(poolSize)
         mInBitmapPool = LinkedBlockingQueue(poolSize)
         workQueue = ArrayBlockingQueue(poolSize * 2)
@@ -156,9 +157,11 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
                             return@execute
                         }
                         val bitmap = decoder.decodeBitmap(path, mInBitmapPool.poll()?.get())
-                        if (state == WORKING && !Thread.currentThread().isInterrupted) {
+                        if (state == WORKING && !Thread.currentThread().isInterrupted && bitmap != null) {
                             tempMap[index] = bitmap
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     } finally {
                         mCountDownLatch.countDown()
                     }

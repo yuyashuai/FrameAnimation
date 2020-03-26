@@ -1,6 +1,7 @@
 package com.yuyashuai.frameanimation
 
 import android.view.View
+import kotlin.properties.Delegates
 
 /**
  * @author yuyashuai 2020-03-19
@@ -12,7 +13,6 @@ class LifeCircleHandler(private val animation: FrameAnimation) {
     var restoreEnable = true
     private var lastStopIndex = 0
     private var lastStopPaths: MutableList<FrameAnimation.PathData>? = null
-
 
     /**
      * stop the animation, save the index when the animation stops playing

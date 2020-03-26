@@ -50,9 +50,19 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
         lifeCircleHandler.pause()
     }
 
+    /**
+     * Whether to release animation in [onDetachedFromWindow].
+     * If your animation plays in [android.app.Dialog] or [android.widget.PopupWindow],
+     * you should set it false, otherwise, playing animation again will throw
+     * IllegalStateException after the window dismiss.
+     */
+    var autoRelease = true
+
     override fun onDetachedFromWindow() {
+        if(autoRelease){
+            lifeCircleHandler.release()
+        }
         super.onDetachedFromWindow()
-        lifeCircleHandler.release()
     }
 
 }
