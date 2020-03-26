@@ -171,3 +171,8 @@ animationView.playAnimation(paths)
 ### issue
 
 有问题[加issue](https://github.com/yuyashuai/SilkyAnimation/issues/new)。
+### 最后
+对于复杂的动效，帧动画体积大、内场占用高、CPU占用高，可能是很差强人意的解决方案了。如果你们开发、设计资源允许的话，或许你可以采用更好的解决方案。比如
+* [Spine](http://zh.esotericsoftware.com/)
+* [Lottie](https://github.com/airbnb/lottie-android)
+> 但是上面的解决方案对于设计来说的确又是一个考验，像lottie要求用必须用AE设计动画并导出（劝退了一波用Flash/Animator的人），而且要求AE素材中不能有非矢量图，不然多帧一样OOM（又劝退了一波用AE的，比如我们很多AE的素材直接来自PS而不是AI）。
