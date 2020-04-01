@@ -64,7 +64,8 @@ interface AnimationController {
 
     /**
      * set the animation repeat mode
-     * Works before the animation plays, if called when animation playing, it won't take effect until the next playing.
+     * Works before the animation plays, if called when animation
+     * playing, it won't take effect until the next playing.
      * @see RepeatMode
      */
     fun setRepeatMode(repeatMode: RepeatMode)
@@ -75,18 +76,30 @@ interface AnimationController {
     fun setRepeatMode(repeatStrategy: RepeatStrategy)
 
     /**
-     * stop the animation async
+     * stop the animation asynchronously.
      * @return the frame index when the animation stops
      */
     fun stopAnimation(): Int
 
+    /**
+     * stop the animation synchronously to prevent drawing after
+     * surface released. Block the main thread until the animation
+     * is completely stopped.(average time:~12ms). If you bind the
+     * [FrameAnimationView.onPause] function with `Activity.onPause`
+     * or `Fragment.onPause`, this function will be invoked in
+     * [LifeCircleHandler.pause] automatically. so you don't need
+     * to call this method normally. But if your animation plays in
+     * [android.app.Dialog] or [android.widget.PopupWindow], better
+     * to use this to stop animation.
+     * @return the frame index when the animation stops
+     */
+    fun stopAnimationSafely(): Int
 
     /**
-     * release the [BitmapPool]'s ThreadPool, you can't play animation after release
-     *
+     * release the [BitmapPool]'s ThreadPool, you can't play
+     * animation after release
      */
     fun release()
-
 
     /**
      * @return Whether the animation is playing
@@ -126,9 +139,9 @@ interface AnimationController {
     fun freezeLastFrame(): Boolean
 
     /**
-     * Binds an animation listener to this animation. The animation listener
-     * is notified of animation events such as the end of the animation or the
-     * repetition of the animation.
+     * Binds an animation listener to this animation. The animation
+     * listener is notified of animation events such as the end of
+     * the animation or the repetition of the animation.
      */
     fun setAnimationListener(listener: FrameAnimation.FrameAnimationListener)
 

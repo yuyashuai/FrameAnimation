@@ -23,7 +23,7 @@ class LifeCircleHandler(private val animation: FrameAnimation) {
         }
         animation.temporaryStop = restoreEnable
         lastStopPaths = animation.mPaths?.toMutableList()
-        lastStopIndex = animation.stopAnimation()
+        lastStopIndex = animation.stopAnimationSafely()
     }
 
     /**

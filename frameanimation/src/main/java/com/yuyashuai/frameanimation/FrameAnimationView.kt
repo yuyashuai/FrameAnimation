@@ -41,8 +41,10 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
      * If your animation plays in [android.app.Dialog] or [android.widget.PopupWindow],
      * you should set it false, otherwise, playing animation again will throw
      * IllegalStateException after the window dismiss.
+     * @see stopAnimationSafely
      */
     var autoRelease = true
+
 
     override fun onDetachedFromWindow() {
         if (autoRelease) {
@@ -50,6 +52,7 @@ class FrameAnimationView private constructor(context: Context, attributeSet: Att
         }
         super.onDetachedFromWindow()
     }
+
 
     fun onResume() {
         lifeCircleHandler.resume()

@@ -31,5 +31,5 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-ext.animation_version_name = "2.3.2"
-ext.animation_version_code = 12
+ext.animation_version_name = "2.3.3"
+ext.animation_version_code = 13

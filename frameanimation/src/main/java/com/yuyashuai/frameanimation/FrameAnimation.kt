@@ -67,6 +67,9 @@ open class FrameAnimation private constructor(
 
     private var temporaryStopSignal = AtomicInteger(0)
 
+    /**
+     * don't clear the last frame
+     */
     @Volatile
     var temporaryStop = false
         set(value) {
@@ -232,13 +235,19 @@ open class FrameAnimation private constructor(
      * stop the animation async
      * @return the frame index when the animation stops
      */
-    override fun stopAnimation(): Int {
+    override fun stopAnimation(): Int = stopAnimation(false)
+
+    private fun stopAnimation(stopSafely: Boolean): Int {
         if (!isPlaying) {
             return 0
         }
         isPlaying = false
         drawThread?.interrupt()
         mBitmapPool.stop()
+        //wait for the animation to finish
+        if (stopSafely) {
+            drawThread?.join()
+        }
         mPaths = null
         mRepeatStrategy.clear()
         if (!temporaryStop) {
@@ -247,6 +256,8 @@ open class FrameAnimation private constructor(
         mayResetTemporaryStopSignal()
         return drawIndex
     }
+
+    override fun stopAnimationSafely() = stopAnimation(true)
 
     override fun getBitmapPool(): BitmapPool {
         return mBitmapPool
@@ -303,7 +314,7 @@ open class FrameAnimation private constructor(
                 Thread.currentThread().interrupt()
             }
 
-            if (!freezeLastFrame || !temporaryStop) {
+            if (!freezeLastFrame && !temporaryStop) {
                 mBitmapDrawer.clear()
             }
             mayResetTemporaryStopSignal()
@@ -448,7 +459,7 @@ open class FrameAnimation private constructor(
     }
 
     override fun release() {
-        stopAnimation()
+        stopAnimationSafely()
         mBitmapPool.release()
     }
 

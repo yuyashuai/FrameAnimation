@@ -16,7 +16,7 @@ class TextureBitmapDrawer(private val mTextureView: TextureView) : BitmapDrawer 
     }
 
     override fun draw(bitmap: Bitmap, matrix: Matrix): Canvas? {
-        if(Thread.currentThread().isInterrupted){
+        if (Thread.currentThread().isInterrupted) {
             return null
         }
         val canvas = mTextureView.lockCanvas() ?: return null

@@ -63,7 +63,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
      */
     private var decoders: ThreadLocal<BitmapDecoder>? = null
 
-    private val tempMap = ConcurrentHashMap<Int, Bitmap?>()
+    private val tempBitmapStore = ConcurrentSkipListMap<Int, Bitmap?>()
 
     private val workQueue: BlockingQueue<Runnable>
 
@@ -158,7 +158,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
                         }
                         val bitmap = decoder.decodeBitmap(path, mInBitmapPool.poll()?.get())
                         if (state == WORKING && !Thread.currentThread().isInterrupted && bitmap != null) {
-                            tempMap[index] = bitmap
+                            tempBitmapStore[index] = bitmap
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -171,7 +171,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
             }
         }
         mCountDownLatch.await()
-        insertPool(tempMap)
+        insertPool(tempBitmapStore)
     }
 
     /**
@@ -184,16 +184,19 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
         mInBitmapPool.clear()
         mIndex.set(0)
         state = IDLE
-        tempMap.clear()
+        tempBitmapStore.clear()
         permit.release()
     }
 
-    private fun insertPool(map: ConcurrentHashMap<Int, Bitmap?>) {
+    private fun insertPool(map: ConcurrentSkipListMap<Int, Bitmap?>) {
         //sort by index
-        map.keys().toList().sorted().forEach {
+       /* map.keys().toList().sorted().forEach {
             if (state == WORKING) {
                 mPool.put(map[it])
             }
+        }*/
+        map.entries.forEach {
+            mPool.put(it.value)
         }
         map.clear()
     }
