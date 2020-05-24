@@ -164,32 +164,14 @@ open class FrameAnimation private constructor(
 
     override fun freezeLastFrame() = freezeLastFrame
 
-    /**
-     * play animation from assets files
-     * @param assetsPath must be a directory
-     */
     override fun playAnimationFromAssets(assetsPath: String) = playAnimationFromAssets(assetsPath, 0)
 
-    /**
-     * play animation from a file directory path
-     * @param filePath must be a directory
-     */
     override fun playAnimationFromFile(filePath: String) = playAnimationFromFile(filePath, 0)
 
-    /**
-     * play animation from assets files
-     * @param assetsPath must be a directory
-     * @param index the start frame index
-     */
     override fun playAnimationFromAssets(assetsPath: String, index: Int) {
         playAnimation(FrameAnimationUtil.getPathList(mContext, assetsPath), index)
     }
 
-    /**
-     * play animation from a file directory path
-     * @param filePath must be a directory
-     * @param index the start frame index
-     */
     override fun playAnimationFromFile(filePath: String, index: Int) {
         playAnimation(FrameAnimationUtil.getPathList(File(filePath)), index)
     }
@@ -271,14 +253,18 @@ open class FrameAnimation private constructor(
                 while (isPlaying && drawing && !Thread.currentThread().isInterrupted) {
                     val startTime = SystemClock.uptimeMillis()
                     val bitmap = mBitmapPool.take()
+                    val interval = SystemClock.uptimeMillis() - startTime
                     if (bitmap == null) {
+                        //the last frame time
+                        if (interval < frameInterval) {
+                            Thread.sleep(frameInterval - interval)
+                        }
                         mHandler.sendEmptyMessage(MSG_STOP)
                         drawing = false
                         continue
                     }
                     configureDrawMatrix(bitmap, mSurfaceView ?: mTextureView!!)
                     val canvas = mBitmapDrawer.draw(bitmap, mDrawMatrix) ?: continue
-                    val interval = SystemClock.uptimeMillis() - startTime
                     try {
                         if (interval < frameInterval) {
                             Thread.sleep(frameInterval - interval)

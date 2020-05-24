@@ -8,16 +8,20 @@ import java.lang.Exception
 import java.lang.ref.WeakReference
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.LockSupport
 import kotlin.concurrent.thread
 import kotlin.math.min
 
-private const val IDLE = 0
-private const val PREPARING = 1
-private const val WORKING = 2
-private const val STOPPING = 3
+
+private const val IDLE = 0x01
+private const val PREPARING = 0x02
+private const val WORKING = 0x04
+private const val WAITING_STOP = 0x08
+private const val STOPPING = 0x10
 
 /**
  * @author yuyashuai   2019-04-24.
+ * Bitmap repository based on producer consumer model
  */
 open class BitmapPoolImpl(context: Context) : BitmapPool {
     private val mContext = context
@@ -97,6 +101,13 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
             relay(repeatStrategy)
             return
         }
+        if (state == WAITING_STOP) {
+            //wake up the dispatcher
+            LockSupport.unpark(dispatcherThread)
+            relay(repeatStrategy)
+            state = WORKING
+            return
+        }
         //Waiting for the aftercare of the last play
         state = PREPARING
         //this should be completed in an instant normally
@@ -137,7 +148,6 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
             mIndex.set(0)
             restartNextDecode = false
         }
-        //val mCountDownLatch = CountDownLatch(poolSize)
         mCountDownLatch.count = poolSize
         for (i in 0 until poolSize) {
             try {
@@ -153,11 +163,11 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
                         val path = mRepeatStrategy?.getNextFrameResource(index)
                         //stop animation
                         if (path == null) {
-                            stop()
+                            state = WAITING_STOP
                             return@execute
                         }
                         val bitmap = decoder.decodeBitmap(path, mInBitmapPool.poll()?.get())
-                        if (state == WORKING && !Thread.currentThread().isInterrupted && bitmap != null) {
+                        if (isWorking() && !Thread.currentThread().isInterrupted && bitmap != null) {
                             tempBitmapStore[index] = bitmap
                         }
                     } catch (e: Exception) {
@@ -172,6 +182,20 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
         }
         mCountDownLatch.await()
         insertPool(tempBitmapStore)
+        //The producer's task has been completed,
+        //wait for the consumer to consume all the bitmaps,
+        //and then we stop working and clear the pool.
+        if (state == WAITING_STOP) {
+            try {
+                LockSupport.park()
+            } finally {
+                LockSupport.unpark(Thread.currentThread())
+            }
+        }
+    }
+
+    private fun isWorking(): Boolean {
+        return state and 0xC != 0
     }
 
     /**
@@ -190,11 +214,6 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
 
     private fun insertPool(map: ConcurrentSkipListMap<Int, Bitmap?>) {
         //sort by index
-       /* map.keys().toList().sorted().forEach {
-            if (state == WORKING) {
-                mPool.put(map[it])
-            }
-        }*/
         map.entries.forEach {
             mPool.put(it.value)
         }
@@ -202,10 +221,22 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
     }
 
     override fun take(): Bitmap? {
-        return if (state == WORKING || state == PREPARING) {
-            mPool.take()
-        } else {
-            null
+        return when {
+            //working or preparing
+            state and 0x6 != 0 -> {
+                mPool.take()
+            }
+            state == WAITING_STOP -> {
+                val bmp = mPool.poll()
+                //consumers have consumed all bitmaps and now stop working
+                if (mPool.isEmpty()) {
+                    stop()
+                }
+                bmp
+            }
+            else -> {
+                null
+            }
         }
     }
 
@@ -221,7 +252,7 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
     }
 
     override fun stop() {
-        if (state != WORKING) {
+        if (!isWorking()) {
             return
         }
         //start stopping
