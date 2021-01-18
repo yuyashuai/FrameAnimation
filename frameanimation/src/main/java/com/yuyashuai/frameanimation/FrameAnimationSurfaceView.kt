@@ -2,9 +2,7 @@ package com.yuyashuai.frameanimation
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.SurfaceHolder
 import android.view.SurfaceView
-import android.view.View
 
 /**
  * the frame animation view to handle the animation life circle
@@ -18,22 +16,22 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
     constructor(context: Context, attributeSet: AttributeSet? = null, defStyle: Int = 0)
             : this(context, attributeSet, defStyle, FrameAnimation(context))
 
-    private val lifeCircleHandler: LifeCircleHandler
+    private val lifecycleHandler: LifecycleHandler
     var restoreEnable: Boolean
         get() {
-            return lifeCircleHandler.restoreEnable
+            return lifecycleHandler.restoreEnable
         }
         set(value) {
-            lifeCircleHandler.restoreEnable = value
+            lifecycleHandler.restoreEnable = value
         }
 
     init {
         animation.bindView(this)
-        lifeCircleHandler = LifeCircleHandler(animation)
+        lifecycleHandler = LifecycleHandler(animation)
     }
 
     fun onResume() {
-        lifeCircleHandler.resume()
+        lifecycleHandler.resume()
     }
 
     /**
@@ -47,7 +45,7 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
      *
      */
     fun onPause() {
-        lifeCircleHandler.pause()
+        lifecycleHandler.pause()
     }
 
     /**
@@ -60,7 +58,7 @@ class FrameAnimationSurfaceView private constructor(context: Context, attributeS
 
     override fun onDetachedFromWindow() {
         if(autoRelease){
-            lifeCircleHandler.release()
+            lifecycleHandler.release()
         }
         super.onDetachedFromWindow()
     }

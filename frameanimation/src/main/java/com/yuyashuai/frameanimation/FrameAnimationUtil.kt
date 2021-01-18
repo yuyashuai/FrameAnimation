@@ -4,14 +4,13 @@ import android.content.Context
 import android.util.Log
 import java.io.File
 import java.io.IOException
-import java.nio.file.Files
-import java.util.*
 
 /**
  * @author yuyashuai   2019-04-25.
  */
 object FrameAnimationUtil {
     private val TAG = javaClass.simpleName
+
     /**
      * get the path list from assets
      *
@@ -31,7 +30,12 @@ object FrameAnimationUtil {
             for (i in assetFiles.indices) {
                 assetFiles[i] = assetsPath + File.separator + assetFiles[i]
             }
-            return assetFiles.map { FrameAnimation.PathData(it, FrameAnimation.PATH_ASSETS) }.toMutableList()
+            return assetFiles.map {
+                FrameAnimation.PathData(
+                    it,
+                    FrameAnimation.PATH_ASSETS
+                )
+            }.toMutableList()
         } catch (e: IOException) {
             Log.e(TAG, e.message)
             e.printStackTrace()
@@ -40,7 +44,10 @@ object FrameAnimationUtil {
     }
 
     @JvmStatic
-    fun getPathList(context: Context, vararg assetsPaths: String): MutableList<FrameAnimation.PathData> {
+    fun getPathList(
+        context: Context,
+        vararg assetsPaths: String
+    ): MutableList<FrameAnimation.PathData> {
         return assetsPaths.flatMap {
             getPathList(context, it)
         }.toMutableList()
@@ -58,7 +65,12 @@ object FrameAnimationUtil {
         if (file != null) {
             if (file.exists() && file.isDirectory) {
                 val files = file.listFiles() ?: return list
-                list.addAll(files.map { FrameAnimation.PathData(it.absolutePath, FrameAnimation.PATH_FILE) })
+                list.addAll(files.map {
+                    FrameAnimation.PathData(
+                        it.absolutePath,
+                        FrameAnimation.PATH_FILE
+                    )
+                })
             } else if (!file.exists()) {
                 Log.e(TAG, "file doesn't exists")
             } else {
@@ -71,7 +83,7 @@ object FrameAnimationUtil {
     }
 
     @JvmStatic
-    fun getPathList(vararg files: File): MutableList<FrameAnimation.PathData> {
+    fun getPathList(files: List<File>): MutableList<FrameAnimation.PathData> {
         return files.flatMap {
             getPathList(it)
         }.toMutableList()

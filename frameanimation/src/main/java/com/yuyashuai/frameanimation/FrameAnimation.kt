@@ -15,7 +15,11 @@ import com.yuyashuai.frameanimation.drawer.SurfaceViewBitmapDrawer
 import com.yuyashuai.frameanimation.drawer.TextureBitmapDrawer
 import com.yuyashuai.frameanimation.io.BitmapPool
 import com.yuyashuai.frameanimation.io.BitmapPoolImpl
-import com.yuyashuai.frameanimation.repeatmode.*
+import com.yuyashuai.frameanimation.repeatmode.RepeatInfinite
+import com.yuyashuai.frameanimation.repeatmode.RepeatOnce
+import com.yuyashuai.frameanimation.repeatmode.RepeatReverse
+import com.yuyashuai.frameanimation.repeatmode.RepeatReverseInfinite
+import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
@@ -25,10 +29,11 @@ import kotlin.math.roundToInt
  * @author yuyashuai   2019-04-25.
  */
 open class FrameAnimation private constructor(
-        private var mTextureView: TextureView?,
-        private var mSurfaceView: SurfaceView?,
-        private var isTextureViewMode: Boolean?,
-        private val mContext: Context) : AnimationController {
+    private var mTextureView: TextureView?,
+    private var mSurfaceView: SurfaceView?,
+    private var isTextureViewMode: Boolean?,
+    private val mContext: Context
+) : AnimationController {
 
     constructor(surfaceView: SurfaceView) : this(null, surfaceView, false, surfaceView.context)
     constructor(textureView: TextureView) : this(textureView, null, true, textureView.context)
@@ -164,7 +169,10 @@ open class FrameAnimation private constructor(
 
     override fun freezeLastFrame() = freezeLastFrame
 
-    override fun playAnimationFromAssets(assetsPath: String) = playAnimationFromAssets(assetsPath, 0)
+    override fun playAnimationFromAssets(assetsPath: String) = playAnimationFromAssets(
+        assetsPath,
+        0
+    )
 
     override fun playAnimationFromFile(filePath: String) = playAnimationFromFile(filePath, 0)
 
@@ -278,12 +286,12 @@ open class FrameAnimation private constructor(
                     animationListener?.let { listener ->
                         mBitmapPool.getRepeatStrategy()?.let { strategy ->
                             listener.onProgress(
-                                    if (strategy.getTotalFrames() == FRAMES_INFINITE) {
-                                        0f
-                                    } else {
-                                        drawIndex.toFloat() / strategy.getTotalFrames().toFloat()
-                                    }
-                                    , drawIndex, strategy.getTotalFrames())
+                                if (strategy.getTotalFrames() == FRAMES_INFINITE) {
+                                    0f
+                                } else {
+                                    drawIndex.toFloat() / strategy.getTotalFrames().toFloat()
+                                }, drawIndex, strategy.getTotalFrames()
+                            )
 
                         }
                     }
@@ -352,7 +360,12 @@ open class FrameAnimation private constructor(
     }
 
     private val MATRIX_SCALE_ARRAY =
-            arrayOf(Matrix.ScaleToFit.FILL, Matrix.ScaleToFit.START, Matrix.ScaleToFit.CENTER, Matrix.ScaleToFit.END)
+        arrayOf(
+            Matrix.ScaleToFit.FILL,
+            Matrix.ScaleToFit.START,
+            Matrix.ScaleToFit.CENTER,
+            Matrix.ScaleToFit.END
+        )
 
     private var mScaleType = ScaleType.CENTER
 
@@ -374,7 +387,7 @@ open class FrameAnimation private constructor(
         val srcHeight = bitmap.height
         val dstHeight = view.height
         val nothingChanged = lastScaleType == mScaleType &&
-                lastSrcWidth == srcWidth && dstWidth == lastDstWidth && lastSrcHeight == srcHeight && lastDstHeight == dstHeight
+            lastSrcWidth == srcWidth && dstWidth == lastDstWidth && lastSrcHeight == srcHeight && lastDstHeight == dstHeight
         if (nothingChanged) {
             return
         }
@@ -386,8 +399,8 @@ open class FrameAnimation private constructor(
         when (mScaleType) {
             ScaleType.MATRIX -> return
             ScaleType.CENTER -> mDrawMatrix.setTranslate(
-                    ((dstWidth - srcWidth) * 0.5f).roundToInt().toFloat(),
-                    ((dstHeight - srcHeight) * 0.5f).roundToInt().toFloat()
+                ((dstWidth - srcWidth) * 0.5f).roundToInt().toFloat(),
+                ((dstHeight - srcHeight) * 0.5f).roundToInt().toFloat()
             )
             ScaleType.CENTER_CROP -> {
                 val scale: Float
@@ -419,7 +432,11 @@ open class FrameAnimation private constructor(
             else -> {
                 val srcRect = RectF(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
                 val dstRect = RectF(0f, 0f, view.width.toFloat(), view.height.toFloat())
-                mDrawMatrix.setRectToRect(srcRect, dstRect, MATRIX_SCALE_ARRAY[mScaleType.value - 1])
+                mDrawMatrix.setRectToRect(
+                    srcRect,
+                    dstRect,
+                    MATRIX_SCALE_ARRAY[mScaleType.value - 1]
+                )
             }
         }
     }

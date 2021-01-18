@@ -87,7 +87,7 @@ interface AnimationController {
      * is completely stopped.(average time:~12ms). If you bind the
      * [FrameAnimationView.onPause] function with `Activity.onPause`
      * or `Fragment.onPause`, this function will be called in
-     * [LifeCircleHandler.pause] automatically, Normally you don't
+     * [LifecycleHandler.pause] automatically, Normally you don't
      * need to call this method manually. But if your animation plays in
      * [android.app.Dialog] or [android.widget.PopupWindow], better
      * to use this to stop animation.

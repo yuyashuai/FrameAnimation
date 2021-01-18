@@ -14,7 +14,7 @@ interface BitmapDrawer {
      * @param matrix the transform matrix
      * @return canvas if draw success otherwise return null
      */
-    fun draw(bitmap: Bitmap,matrix: Matrix):Canvas?
+    fun draw(bitmap: Bitmap, matrix: Matrix): Canvas?
 
     fun unlockAndPost(canvas: Canvas)
 

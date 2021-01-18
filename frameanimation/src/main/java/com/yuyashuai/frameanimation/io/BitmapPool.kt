@@ -29,7 +29,7 @@ interface BitmapPool {
 
     /**
      * stop decode bitmap
-      */
+     */
     fun stop()
 
     /**

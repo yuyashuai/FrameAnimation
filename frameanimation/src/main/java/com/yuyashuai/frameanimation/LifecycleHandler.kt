@@ -1,12 +1,10 @@
 package com.yuyashuai.frameanimation
 
-import android.view.View
-import kotlin.properties.Delegates
 
 /**
  * @author yuyashuai 2020-03-19
  */
-class LifeCircleHandler(private val animation: FrameAnimation) {
+class LifecycleHandler(private val animation: FrameAnimation) {
     /**
      * whether to resume playback
      */

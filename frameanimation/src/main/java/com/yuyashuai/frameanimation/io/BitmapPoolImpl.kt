@@ -4,9 +4,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.yuyashuai.frameanimation.repeatmode.RepeatStrategy
-import java.lang.Exception
 import java.lang.ref.WeakReference
-import java.util.concurrent.*
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.ConcurrentSkipListMap
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.Semaphore
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.LockSupport
 import kotlin.concurrent.thread
@@ -84,12 +91,12 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
         skipInBitmapCount = poolSize
         val ac = AtomicInteger()
         mDecodeThreadPool =
-                ThreadPoolExecutor(poolSize, poolSize, 30,
-                        TimeUnit.SECONDS, workQueue, ThreadFactory {
-                    return@ThreadFactory Thread(it).apply { name = "FA-${ac.getAndIncrement()}DecodeThread" }
-                }).apply {
-                    allowCoreThreadTimeOut(true)
-                }
+            ThreadPoolExecutor(poolSize, poolSize, 30,
+                TimeUnit.SECONDS, workQueue, ThreadFactory {
+                return@ThreadFactory Thread(it).apply { name = "FA-${ac.getAndIncrement()}DecodeThread" }
+            }).apply {
+                allowCoreThreadTimeOut(true)
+            }
     }
 
     override fun start(repeatStrategy: RepeatStrategy, index: Int) {
@@ -194,9 +201,8 @@ open class BitmapPoolImpl(context: Context) : BitmapPool {
         }
     }
 
-    private fun isWorking(): Boolean {
-        return state and 0xC != 0
-    }
+    //working stopping
+    private fun isWorking() = state and 0xC != 0
 
     /**
      * clear the resource after animation stop
